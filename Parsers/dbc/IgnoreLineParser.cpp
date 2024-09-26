@@ -1,7 +1,7 @@
 #include "IgnoreLineParser.hpp"
 #include "CANBusManager.hpp"
 
-bool IgnoreLineParser::tryParse(const std::string& line, std::shared_ptr<CANBusManager> busMan, std::string busName) {
+bool IgnoreLineParser::tryParse(const std::string& line, std::shared_ptr<CANBusManager> busMan, const std::string& busName) {
     std::string _trimmed = line; // Copy line to trim it
     _trimmed.erase(0, _trimmed.find_first_not_of(" \t\n\r\f\v")); // Left trim
 

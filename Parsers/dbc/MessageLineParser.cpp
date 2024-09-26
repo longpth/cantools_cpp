@@ -7,7 +7,7 @@ const std::string MessageLineParser::MessageLineStarter = "BO_ ";
 const std::regex MessageLineParser::MessageRegex(
     R"(BO_ (\d+)\s+([a-zA-Z_]\w*)\s*:\s*(\d+)\s+([a-zA-Z_]\w*))");
 
-bool MessageLineParser::tryParse(const std::string& line, std::shared_ptr<CANBusManager> busMan, std::string busName) {
+bool MessageLineParser::tryParse(const std::string& line, std::shared_ptr<CANBusManager> busMan, const std::string& busName) {
      std::string _trimmed = line; // Copy line to trim it
      _trimmed.erase(0, _trimmed.find_first_not_of(" \t\n\r\f\v")); // Left trim
 

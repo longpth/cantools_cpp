@@ -10,7 +10,7 @@ const std::string NodeLineParser::NameGroup = "Name";
 NodeLineParser::NodeLineParser()
     : _regex(R"(BU_:\s*((?:\s+[a-zA-Z_][\w]*\s*)+))") {}
 
-bool NodeLineParser::tryParse(const std::string& line, std::shared_ptr<CANBusManager> busManager, std::string busName) {
+bool NodeLineParser::tryParse(const std::string& line, std::shared_ptr<CANBusManager> busManager, const std::string& busName) {
     // Check if the line starts with "BU_:"
     if (line.find(NodeLineStarter) != 0)
         return false;

@@ -14,5 +14,5 @@ private:
 
 public:
     NodeLineParser();
-    bool tryParse(const std::string& line, std::shared_ptr<CANBusManager> busManager, std::string busName) override;
+    virtual bool tryParse(const std::string& line, std::shared_ptr<CANBusManager> busMan, const std::string& busName) override;
 };

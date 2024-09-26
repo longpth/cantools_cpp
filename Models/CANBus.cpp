@@ -26,7 +26,33 @@ std::shared_ptr<CANNode> CANBus::getNodeByName(const std::string& nodeName) cons
 }
 
 void CANBus::addMessage(const std::shared_ptr<CANMessage>& message) {
-    _allMessages.push_back(message);
+    // Check if a message with the same ID already exists
+    auto it = std::find_if(_allMessages.begin(), _allMessages.end(),
+        [&message](const std::shared_ptr<CANMessage>& m) {
+            return m->getId() == message->getId();
+        });
+    if (it == _allMessages.end()) { // Message ID not found, add new message
+        _allMessages.push_back(message);
+        _currentMessage = message;
+        _allSignals[_currentMessage->getId()] = std::vector<std::shared_ptr<CANSignal>>();
+    }
+    else {
+        // Optionally, handle the case where the message is a duplicate
+        // For example, you could log this event or update the existing message
+    }
+}
+
+void CANBus::addSignal(const std::shared_ptr<CANSignal>& signal){
+    if (_currentMessage) {
+        signal->setParent(_currentMessage);
+        auto it = std::find_if(_allSignals[_currentMessage->getId()].begin(), _allSignals[_currentMessage->getId()].end(), [&signal](const std::shared_ptr<CANSignal>& s) {
+            return signal->getName() == s->getName();
+            });
+        if (_allSignals[_currentMessage->getId()].size() == 0 || it == _allSignals[_currentMessage->getId()].end())
+        {
+            _allSignals[_currentMessage->getId()].push_back(signal);
+        }
+    }
 }
 
 std::shared_ptr<CANMessage> CANBus::getMessageById(const uint32_t id) const {

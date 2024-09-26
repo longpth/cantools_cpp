@@ -5,6 +5,7 @@
 #include "IgnoreLineParser.hpp"
 #include "MessageLineParser.hpp"
 #include "ExtraMessageLineParser.hpp"
+#include "SignalLineParser.hpp"
 #include "Logger.hpp"
 
 Parser::Parser(std::shared_ptr<CANBusManager> busManager)
@@ -14,11 +15,13 @@ Parser::Parser(std::shared_ptr<CANBusManager> busManager)
     auto ignoreLineParserPtr = std::make_shared<IgnoreLineParser>();
     auto messageLineParserPtr = std::make_shared<MessageLineParser>();
     auto extraMessageLineParser = std::make_shared<ExtraMessageLineParser>();
+    auto signalLineParser = std::make_shared <SignalLineParser>();
 
     _vLineParsers.push_back(std::move(nodeLineParserPtr));
     _vLineParsers.push_back(std::move(ignoreLineParserPtr));
     _vLineParsers.push_back(std::move(messageLineParserPtr));
     _vLineParsers.push_back(std::move(extraMessageLineParser));
+    _vLineParsers.push_back(std::move(signalLineParser));
 } 
 
 bool Parser::loadDBC(const std::string& fileDir) {

@@ -27,7 +27,7 @@ std::vector<std::string> splitTransmitters(const std::string& transmitters) {
     return result;
 }
 
-bool ExtraMessageLineParser::tryParse(const std::string& line, std::shared_ptr<CANBusManager> busMan, std::string busName) {
+bool ExtraMessageLineParser::tryParse(const std::string& line, std::shared_ptr<CANBusManager> busMan, const std::string& busName) {
     std::string _trimmed = line;
     _trimmed.erase(0, _trimmed.find_first_not_of(" \t\n\r\f\v")); // Left trim
 

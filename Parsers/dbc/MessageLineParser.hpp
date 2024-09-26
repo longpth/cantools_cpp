@@ -16,5 +16,5 @@ public:
     MessageLineParser() = default;
 
     // Overriding the tryParse function
-    virtual bool tryParse(const std::string& line, std::shared_ptr<CANBusManager> busMan, std::string busName) override;
+    virtual bool tryParse(const std::string& line, std::shared_ptr<CANBusManager> busMan, const std::string& busName) override;
 };
