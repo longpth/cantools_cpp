@@ -1,0 +1,48 @@
+// CANMessage.h
+#pragma once
+#include <vector>
+#include <memory>
+#include "CANSignal.hpp"
+#include "SignalGroup.hpp"
+
+#include <iostream>
+
+class CANMessage {
+private:
+    uint32_t _id;
+    std::vector<std::shared_ptr<CANSignal>> _signals;
+    std::vector<std::shared_ptr<SignalGroup>> _signalGroups;
+    std::string _name;
+    int _dlc;
+    std::string _transmitter;
+    std::vector<std::string> _additionalTransmitters;
+
+public:
+    CANMessage(uint32_t id);
+
+    void addSignal(const std::shared_ptr<CANSignal>& signal);
+
+    void addSignalGroup(const std::shared_ptr<SignalGroup>& group);
+
+    void display() const;
+
+    uint32_t getId() const;
+
+    std::string getName() const;
+
+    std::string getTransmitter() const;
+
+    std::vector<std::string> getAdditionalTransmitters() const;
+
+    int getDlc() const;
+
+    void setId(uint32_t id);
+
+    void setName(const std::string& name);
+
+    void setTransmitter(const std::string& transmitter);
+
+    void setAdditionalTransmitters(std::vector<std::string> addTransmitters);
+
+    void setDlc(int dlc);
+};
