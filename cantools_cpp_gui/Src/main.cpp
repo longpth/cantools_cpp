@@ -1,26 +1,18 @@
-#include <wx/wx.h>
+#include "GUIModel.hpp"
+#include "GUIView.hpp"
+#include "GUIController.hpp"
 
-class MyApp : public wxApp {
+class MyApp : public wxApp
+{
 public:
-    virtual bool OnInit();
+    virtual bool OnInit() {
+        GUIModel* model = new GUIModel();
+        GUIView* view = new GUIView();
+        GUIController* controller = new GUIController(model, view);
+
+        view->Show(true);
+        return true;
+    }
 };
 
-class MyFrame : public wxFrame {
-public:
-    MyFrame(const wxString& title);
-};
-
-// Implement the application entry point
 wxIMPLEMENT_APP(MyApp);
-
-bool MyApp::OnInit() {
-    MyFrame* frame = new MyFrame("Hello World with wxWidgets");
-    frame->Show(true);
-    return true;
-}
-
-MyFrame::MyFrame(const wxString& title)
-    : wxFrame(NULL, wxID_ANY, title, wxDefaultPosition, wxSize(400, 300)) {
-    wxPanel* panel = new wxPanel(this, wxID_ANY);
-    wxStaticText* text = new wxStaticText(panel, wxID_ANY, "Hello, wxWidgets!", wxPoint(20, 20));
-}

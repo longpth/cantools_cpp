@@ -13,6 +13,9 @@ set(CMAKE_CXX_STANDARD_REQUIRED True)
 
 # Include directories
 include_directories(${PROJECT_SOURCE_DIR}/Src)
+include_directories(${PROJECT_SOURCE_DIR}/Src/Models)
+include_directories(${PROJECT_SOURCE_DIR}/Src/Views)
+include_directories(${PROJECT_SOURCE_DIR}/Src/Controllers)
 include_directories(${PROJECT_SOURCE_DIR}/ThirdParty)
 
 # Add subdirectories
