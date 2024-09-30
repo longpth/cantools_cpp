@@ -6,15 +6,20 @@
 #include "ILineParser.hpp"
 #include "CANBusManager.hpp"
 
-class MessageLineParser : public ILineParser {
-private:
-    static const std::string MessageLineStarter;
-    static const std::regex MessageRegex;
+namespace cantools_cpp
+{
 
-public:
-    // Constructor
-    MessageLineParser() = default;
+    class MessageLineParser : public ILineParser {
+    private:
+        static const std::string MessageLineStarter;
+        static const std::regex MessageRegex;
 
-    // Overriding the tryParse function
-    virtual bool tryParse(const std::string& line, std::shared_ptr<CANBusManager> busMan, const std::string& busName) override;
-};
+    public:
+        // Constructor
+        MessageLineParser() = default;
+
+        // Overriding the tryParse function
+        virtual bool tryParse(const std::string& line, std::shared_ptr<CANBusManager> busMan, const std::string& busName) override;
+    };
+
+}

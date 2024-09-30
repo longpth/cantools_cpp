@@ -1,81 +1,90 @@
 #include "CANBus.hpp"
 #include "Logger.hpp"
 
-void CANBus::addNode(const std::shared_ptr<CANNode>& node) {
-    _nodes.push_back(node);
-}
+namespace cantools_cpp
+{
 
-void CANBus::transmitMessage(const CANMessage& message) {
-    Logger::getInstance().log("Transmitting message on CAN Bus: " + _busName, Logger::INFO);
-    for (auto& node : _nodes) {
-        node->receiveMessage(message);
+    void CANBus::addNode(const std::shared_ptr<CANNode>& node) {
+        _nodes.push_back(node);
     }
-}
 
-std::string CANBus::getName() const {
-    return _busName;
-}
-
-std::shared_ptr<CANNode> CANBus::getNodeByName(const std::string& nodeName) const {
-    for (const auto& node : _nodes) {
-        if (node->getName() == nodeName) {
-            return node;
+    void CANBus::transmitMessage(const CANMessage& message) {
+        Logger::getInstance().log("Transmitting message on CAN Bus: " + _busName, Logger::INFO);
+        for (auto& node : _nodes) {
+            node->receiveMessage(message);
         }
     }
-    return nullptr; // Return nullptr if no node with the given name is found
-}
 
-void CANBus::addMessage(const std::shared_ptr<CANMessage>& message) {
-    // Check if a message with the same ID already exists
-    auto it = std::find_if(_allMessages.begin(), _allMessages.end(),
-        [&message](const std::shared_ptr<CANMessage>& m) {
-            return m->getId() == message->getId();
-        });
-    if (it == _allMessages.end()) { // Message ID not found, add new message
-        _allMessages.push_back(message);
-        _currentMessage = message;
-        _allSignals[_currentMessage->getId()] = std::vector<std::shared_ptr<CANSignal>>();
+    std::string CANBus::getName() const {
+        return _busName;
     }
-    else {
-        // Optionally, handle the case where the message is a duplicate
-        // For example, you could log this event or update the existing message
-    }
-}
 
-void CANBus::addSignal(const std::shared_ptr<CANSignal>& signal){
-    if (_currentMessage) {
-        signal->setParent(_currentMessage);
-        auto it = std::find_if(_allSignals[_currentMessage->getId()].begin(), _allSignals[_currentMessage->getId()].end(), [&signal](const std::shared_ptr<CANSignal>& s) {
-            return signal->getName() == s->getName();
+    std::shared_ptr<CANNode> CANBus::getNodeByName(const std::string& nodeName) const {
+        for (const auto& node : _nodes) {
+            if (node->getName() == nodeName) {
+                return node;
+            }
+        }
+        return nullptr; // Return nullptr if no node with the given name is found
+    }
+
+    void CANBus::addMessage(const std::shared_ptr<CANMessage>& message) {
+        // Check if a message with the same ID already exists
+        auto it = std::find_if(_allMessages.begin(), _allMessages.end(),
+            [&message](const std::shared_ptr<CANMessage>& m) {
+                return m->getId() == message->getId();
             });
-        if (_allSignals[_currentMessage->getId()].size() == 0 || it == _allSignals[_currentMessage->getId()].end())
+        if (it == _allMessages.end()) { // Message ID not found, add new message
+            _allMessages.push_back(message);
+            _currentMessage = message;
+            _allSignals[_currentMessage->getId()] = std::vector<std::shared_ptr<CANSignal>>();
+        }
+        else {
+            // Optionally, handle the case where the message is a duplicate
+            // For example, you could log this event or update the existing message
+        }
+    }
+
+    void CANBus::addSignal(const std::shared_ptr<CANSignal>& signal) {
+        if (_currentMessage) {
+            signal->setParent(_currentMessage);
+            auto it = std::find_if(_allSignals[_currentMessage->getId()].begin(), _allSignals[_currentMessage->getId()].end(), [&signal](const std::shared_ptr<CANSignal>& s) {
+                return signal->getName() == s->getName();
+                });
+            if (_allSignals[_currentMessage->getId()].size() == 0 || it == _allSignals[_currentMessage->getId()].end())
+            {
+                _allSignals[_currentMessage->getId()].push_back(signal);
+            }
+        }
+    }
+
+    std::shared_ptr<CANMessage> CANBus::getMessageById(const uint32_t id) const {
+        auto it = std::find_if(_allMessages.begin(), _allMessages.end(),
+            [id](const std::shared_ptr<CANMessage>& message) {
+                return message->getId() == id;
+            });
+
+        if (it != _allMessages.end()) {
+            return (*it);
+        }
+        else {
+            return nullptr;
+        }
+    }
+
+    void CANBus::addSignalValueType(uint32_t messageId, std::string signalName, DbcValueType type) {
+        auto it = _allSignals.find(messageId);
+        if (it != _allSignals.end())
         {
-            _allSignals[_currentMessage->getId()].push_back(signal);
+            auto it2 = std::find_if(_allSignals[messageId].begin(), _allSignals[messageId].end(), [signalName](const std::shared_ptr<CANSignal>& signal) { return signalName == signal->getName(); });
+            if (it2 != _allSignals[messageId].end()) {
+                (*it2)->setValueType(type);
+            }
         }
     }
-}
 
-std::shared_ptr<CANMessage> CANBus::getMessageById(const uint32_t id) const {
-    auto it = std::find_if(_allMessages.begin(), _allMessages.end(),
-        [id](const std::shared_ptr<CANMessage>& message) {
-            return message->getId() == id;
-        });
-
-    if (it != _allMessages.end()) {
-        return (*it);
-    }
-    else {
-        return nullptr;
-    }
-}
-
-void CANBus::addSignalValueType(uint32_t messageId, std::string signalName, DbcValueType type) {
-    auto it = _allSignals.find(messageId);
-    if (it != _allSignals.end())
+    std::vector<std::shared_ptr<CANMessage>> CANBus::getAllMessages()
     {
-        auto it2 = std::find_if(_allSignals[messageId].begin(), _allSignals[messageId].end(), [signalName](const std::shared_ptr<CANSignal>& signal) { return signalName == signal->getName(); });
-        if (it2 != _allSignals[messageId].end()) {
-            (*it2)->setValueType(type);
-        }
+        return _allMessages;
     }
 }

@@ -1,21 +1,24 @@
 #include "IgnoreLineParser.hpp"
 #include "CANBusManager.hpp"
 
-bool IgnoreLineParser::tryParse(const std::string& line, std::shared_ptr<CANBusManager> busMan, const std::string& busName) {
-    std::string _trimmed = line; // Copy line to trim it
-    _trimmed.erase(0, _trimmed.find_first_not_of(" \t\n\r\f\v")); // Left trim
+namespace cantools_cpp
+{
 
-    // Helper lambda to replace starts_with for older C++ versions
-    auto startsWith = [](const std::string& fullString, const std::string& beginning) -> bool {
-        if (fullString.length() >= beginning.length()) {
-            return fullString.compare(0, beginning.length(), beginning) == 0;
-        }
-        return false;
-        
-    };
+    bool IgnoreLineParser::tryParse(const std::string& line, std::shared_ptr<CANBusManager> busMan, const std::string& busName) {
+        std::string _trimmed = line; // Copy line to trim it
+        _trimmed.erase(0, _trimmed.find_first_not_of(" \t\n\r\f\v")); // Left trim
 
-    // Checking for specific start sequences or complete matches
-    return startsWith(_trimmed, "VERSION") ||
+        // Helper lambda to replace starts_with for older C++ versions
+        auto startsWith = [](const std::string& fullString, const std::string& beginning) -> bool {
+            if (fullString.length() >= beginning.length()) {
+                return fullString.compare(0, beginning.length(), beginning) == 0;
+            }
+            return false;
+
+            };
+
+        // Checking for specific start sequences or complete matches
+        return startsWith(_trimmed, "VERSION") ||
             startsWith(_trimmed, "BS_") ||
             startsWith(_trimmed, "NS_ ") ||
             startsWith(_trimmed, "NS_DESC_") ||
@@ -46,4 +49,5 @@ bool IgnoreLineParser::tryParse(const std::string& line, std::shared_ptr<CANBusM
             _trimmed == "BU_EV_REL_" ||
             _trimmed == "BU_BO_REL_" ||
             _trimmed == "SG_MUL_VAL_";
+    }
 }

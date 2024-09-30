@@ -4,27 +4,31 @@
 #include "CANBus.hpp"
 #include "Logger.hpp"
 
-CANBusManager::CANBusManager() {
-}
+namespace cantools_cpp
+{
 
-CANBusManager::~CANBusManager() {}
+    CANBusManager::CANBusManager() {
+    }
 
-void CANBusManager::createBus(const std::string& busName) {
-    if (_busMap.find(busName) == _busMap.end()) {
-        _busMap[busName] = std::make_shared<CANBus>(busName);
-        Logger::getInstance().log("CAN Bus " + busName + " created.", Logger::INFO );
-    }
-    else {
-        Logger::getInstance().log("CAN Bus " + busName + " already exists.", Logger::INFO);
-    }
-}
+    CANBusManager::~CANBusManager() {}
 
-std::shared_ptr<CANBus> CANBusManager::getBus(const std::string& busName) {
-    if (_busMap.find(busName) != _busMap.end()) {
-        return _busMap[busName];
+    void CANBusManager::createBus(const std::string& busName) {
+        if (_busMap.find(busName) == _busMap.end()) {
+            _busMap[busName] = std::make_shared<CANBus>(busName);
+            Logger::getInstance().log("CAN Bus " + busName + " created.", Logger::INFO);
+        }
+        else {
+            Logger::getInstance().log("CAN Bus " + busName + " already exists.", Logger::INFO);
+        }
     }
-    else {
-        Logger::getInstance().log("CAN Bus " + busName + " not found.", Logger::ERROR);
-        return nullptr;
+
+    std::shared_ptr<CANBus> CANBusManager::getBus(const std::string& busName) {
+        if (_busMap.find(busName) != _busMap.end()) {
+            return _busMap[busName];
+        }
+        else {
+            Logger::getInstance().log("CAN Bus " + busName + " not found.", Logger::ERROR);
+            return nullptr;
+        }
     }
 }

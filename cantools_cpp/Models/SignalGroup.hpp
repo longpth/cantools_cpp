@@ -4,22 +4,25 @@
 #include <memory>
 #include "CANSignal.hpp"
 
-class SignalGroup {
-private:
-    std::vector<std::shared_ptr<CANSignal>> _signals;
-    std::string _groupName;
+namespace cantools_cpp
+{
 
-public:
-    SignalGroup(const std::string& name) : _groupName(name) {}
+    class SignalGroup {
+    private:
+        std::vector<std::shared_ptr<CANSignal>> _signals;
+        std::string _groupName;
 
-    void addSignal(const std::shared_ptr<CANSignal>& signal) {
-        _signals.push_back(signal);
-    }
+    public:
+        SignalGroup(const std::string& name) : _groupName(name) {}
 
-    void display() const {
-        std::cout << "Signal Group: " << _groupName << std::endl;
-        for (const auto& signal : _signals) {
-            signal->display();
+        void addSignal(const std::shared_ptr<CANSignal>& signal) {
+            _signals.push_back(signal);
         }
-    }
-};
+
+        void display() const {
+            for (const auto& signal : _signals) {
+                signal->display();
+            }
+        }
+    };
+}

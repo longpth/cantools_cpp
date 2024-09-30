@@ -8,44 +8,54 @@
 
 #include <iostream>
 
-class CANMessage {
-private:
-    uint32_t _id;
-    std::vector<std::shared_ptr<CANSignal>> _signals;
-    std::vector<std::shared_ptr<SignalGroup>> _signalGroups;
-    std::string _name;
-    int _dlc;
-    std::string _transmitter;
-    std::vector<std::string> _additionalTransmitters;
-    static const std::map<uint8_t, uint8_t> _dlc2datalength;
-    std::shared_ptr<uint8_t> _data;
+namespace cantools_cpp
+{
 
-public:
-    CANMessage(uint32_t id);
+    class CANMessage {
+    private:
+        uint32_t _id;
+        std::vector<std::shared_ptr<CANSignal>> _signals;
+        std::vector<std::shared_ptr<SignalGroup>> _signalGroups;
+        std::string _name;
+        int _dlc;
+        std::string _transmitter;
+        std::vector<std::string> _additionalTransmitters;
+        static const std::map<uint8_t, uint8_t> _dlc2datalength;
+        std::shared_ptr<uint8_t> _data;
+        float _cycle;
 
-    void addSignal(const std::shared_ptr<CANSignal>& signal);
+    public:
+        CANMessage(uint32_t id);
 
-    void addSignalGroup(const std::shared_ptr<SignalGroup>& group);
+        void addSignal(const std::shared_ptr<CANSignal>& signal);
 
-    void display() const;
+        void addSignalGroup(const std::shared_ptr<SignalGroup>& group);
 
-    uint32_t getId() const;
+        void display() const;
 
-    std::string getName() const;
+        uint32_t getId() const;
 
-    std::string getTransmitter() const;
+        std::string getName() const;
 
-    std::vector<std::string> getAdditionalTransmitters() const;
+        std::string getTransmitter() const;
 
-    int getDlc() const;
+        std::vector<std::string> getAdditionalTransmitters() const;
 
-    void setId(uint32_t id);
+        int getDlc() const;
 
-    void setName(const std::string& name);
+        float getCycle() const;
 
-    void setTransmitter(const std::string& transmitter);
+        void setId(uint32_t id);
 
-    void setAdditionalTransmitters(std::vector<std::string> addTransmitters);
+        void setName(const std::string& name);
 
-    void setDlc(int dlc);
-};
+        void setTransmitter(const std::string& transmitter);
+
+        void setAdditionalTransmitters(std::vector<std::string> addTransmitters);
+
+        void setDlc(int dlc);
+
+        void setCycle(float cycle);
+    };
+
+}

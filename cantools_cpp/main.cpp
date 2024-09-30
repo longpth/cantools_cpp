@@ -9,10 +9,10 @@ using namespace std;
 
 int main() {
     // Create CANBusManager instance as a unique_ptr
-    auto busManager = std::make_shared<CANBusManager>();
+    auto busManager = std::make_shared<cantools_cpp::CANBusManager>();
 
     // Create the Parser with CANBusManager unique_ptr
-    Parser parser(busManager); // Transfer ownership to the parser
+    cantools_cpp::Parser parser(busManager); // Transfer ownership to the parser
 
     // Load database from file
     parser.loadDBC("../../../../DbcFiles/tesla_can.dbc");

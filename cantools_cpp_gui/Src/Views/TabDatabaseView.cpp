@@ -1,4 +1,5 @@
 #include "TabDatabaseView.hpp"
+#include <wx/filename.h>
 
 enum {
     ID_LoadDBC = 1001  // Event ID for the Load DBC button
@@ -10,7 +11,8 @@ EVT_BUTTON(ID_LoadDBC, TabDatabaseView::OnLoadDBC)
 wxEND_EVENT_TABLE()
 
 TabDatabaseView::TabDatabaseView(wxNotebook* parent)
-    : wxPanel(parent, wxID_ANY)
+    : wxPanel(parent, wxID_ANY), _busManager(std::make_shared<cantools_cpp::CANBusManager>()),
+    _parser(std::make_unique<cantools_cpp::Parser>(_busManager)) // Initialize parser with bus manager
 {
     SetupLayout();
 }
@@ -19,7 +21,7 @@ void TabDatabaseView::SetupLayout()
 {
     // Horizontal box sizer to align the load button and file path field
     wxBoxSizer* hBoxTop = new wxBoxSizer(wxHORIZONTAL);
-    filePathCtrl = new wxTextCtrl(this, wxID_ANY, "", wxDefaultPosition, wxSize(600, -1));
+    filePathCtrl = new wxTextCtrl(this, wxID_ANY, "..//..//..//..//cantools_cpp//DbcFiles//tesla_can.dbc", wxDefaultPosition, wxSize(600, -1));
     loadDBCButton = new wxButton(this, ID_LoadDBC, "Load DBC");
 
     hBoxTop->Add(filePathCtrl, 1, wxEXPAND | wxALL, 5);
@@ -77,26 +79,40 @@ void TabDatabaseView::OnLoadDBC(wxCommandEvent& event)
     wxString filePath = openFileDialog.GetPath();
     filePathCtrl->SetValue(filePath);
 
-    // You can now load and parse the DBC file here...
-    PopulateData();
+    // Call PopulateData with the file path
+    PopulateData(filePath.ToStdString()); // Convert wxString to std::string
 }
 
-void TabDatabaseView::PopulateData()
+void TabDatabaseView::PopulateData(const std::string& filePath)
 {
-    // Placeholder for populating CAN data after DBC file load
-    // This can be updated later to load real CAN messages, signals, and nodes
-    nodesList->InsertItem(0, "NEO");
-    nodesList->SetItem(0, 1, "Transmitting");
+    // Load database from file
+    _parser->loadDBC(filePath);
 
-    messagesGrid->SetCellValue(0, 0, "0x488");
-    messagesGrid->SetCellValue(0, 1, "DAS_steeringCmd");
-    messagesGrid->SetCellValue(0, 2, "8");
-    messagesGrid->SetCellValue(0, 3, "NEO");
-    messagesGrid->SetCellValue(0, 4, "0");
+    // Extract the bus name from the file name (without the extension)
+    wxFileName fileName(filePath);
+    std::string busName = fileName.GetName().ToStdString(); // Get the file name without extension
 
-    signalsGrid->SetCellValue(0, 0, "0x488");
-    signalsGrid->SetCellValue(0, 1, "DAS_steeringAngle");
-    signalsGrid->SetCellValue(0, 2, "31");
-    signalsGrid->SetCellValue(0, 3, "12");
-    signalsGrid->SetCellValue(0, 4, "0");
+    // Access the bus using the extracted bus name
+    auto bus = _busManager->getBus(busName);
+
+    // Retrieve all messages
+    auto messages = bus->getAllMessages();
+
+    // Clear the previous data in the grid
+    messagesGrid->ClearGrid(); // Clear existing data
+    messagesGrid->DeleteRows(0, messagesGrid->GetNumberRows()); // Remove all rows
+
+    // Resize the grid to fit the number of messages
+    messagesGrid->AppendRows(messages.size());
+
+    // Populate the grid with CAN message data
+    for (size_t i = 0; i < messages.size(); ++i) {
+        const auto& message = messages[i];
+        messagesGrid->SetCellValue(i, 0, wxString::Format("0x%X", message->getId())); // ID
+        messagesGrid->SetCellValue(i, 1, message->getName()); // Name
+        messagesGrid->SetCellValue(i, 2, wxString::Format("%d", message->getDlc())); // DLC
+        messagesGrid->SetCellValue(i, 3, message->getTransmitter()); // Transmitter
+        messagesGrid->SetCellValue(i, 4, wxString::Format("%d", static_cast<int>(message->getCycle()))); // CycleTime
+    }
 }
+

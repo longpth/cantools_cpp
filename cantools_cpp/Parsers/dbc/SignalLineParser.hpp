@@ -6,15 +6,19 @@
 #include "CANBusManager.hpp"  // Assumes this class exists and can handle CANSignal
 #include "CANSignal.hpp"      // Include the CANSignal header
 
-class SignalLineParser : public ILineParser {
-public:
-    SignalLineParser();
+namespace cantools_cpp
+{
 
-    virtual bool tryParse(const std::string& line, std::shared_ptr<CANBusManager> busManager, const std::string& busName) override;
+    class SignalLineParser : public ILineParser {
+    public:
+        SignalLineParser();
 
-private:
-    static const std::regex signalRegex;
-    static bool isInteger(const std::string& str);
-};
+        virtual bool tryParse(const std::string& line, std::shared_ptr<CANBusManager> busManager, const std::string& busName) override;
 
-// Regex pattern is defined in the .cpp file
+    private:
+        static const std::regex signalRegex;
+        static bool isInteger(const std::string& str);
+    };
+
+    // Regex pattern is defined in the .cpp file
+}
