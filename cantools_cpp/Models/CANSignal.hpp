@@ -23,7 +23,7 @@ namespace cantools_cpp
         float _offset;
         uint64_t _value;
 
-        std::shared_ptr<CANMessage> _parent;
+        std::weak_ptr<CANMessage> _parent;
 
         DbcValueType _valueType;
 
@@ -52,6 +52,6 @@ namespace cantools_cpp
         // Display method
         void display() const;
 
-        void setParent(std::shared_ptr<CANMessage> parent);
+        void setParent(std::weak_ptr<CANMessage> parent);
     };
 }

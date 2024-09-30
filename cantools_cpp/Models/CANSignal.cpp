@@ -30,7 +30,7 @@ namespace cantools_cpp
         Logger::getInstance().log("Signal: " + _name + ", Value: " + std::to_string(_value), Logger::LOG_INFO);
     }
 
-    void CANSignal::setParent(std::shared_ptr<CANMessage> parent)
+    void CANSignal::setParent(std::weak_ptr<CANMessage> parent)
     {
         _parent = parent;
     }

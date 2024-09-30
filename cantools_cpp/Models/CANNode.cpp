@@ -9,23 +9,31 @@ namespace cantools_cpp
 {
 
     CANNode::CANNode(const std::string& name, const std::string& busName, CANBusManager& busManager)
-        : _nodeName(name) {
+        : _nodeName(name), _isAttchedToBus(false) {
         _connectedBus = busManager.getBus(busName);
-        if (_connectedBus) {
-            _connectedBus->addNode(std::make_shared<CANNode>(*this));
-            Logger::getInstance().log("Node " + _nodeName + " connected to CAN Bus " + busName, Logger::LOG_INFO);
+    }
+
+    void CANNode::attachToBus()
+    {
+        auto bus = _connectedBus.lock();
+        if (bus && !_isAttchedToBus) {
+            bus->addNode(shared_from_this());
+            Logger::getInstance().log("Node " + _nodeName + " connected to CAN Bus " + bus->getName(), Logger::LOG_INFO);
         }
     }
 
     void CANNode::receiveMessage(const CANMessage& message) {
-        Logger::getInstance().log("Node " + _nodeName + " received message ID: " + std::to_string(message.getId()) + " from Bus " + _connectedBus->getName(), Logger::LOG_INFO);
+        auto bus = _connectedBus.lock();
+        Logger::getInstance().log("Node " + _nodeName + " received message ID: " + std::to_string(message.getId()) + " from Bus " + bus->getName(), Logger::LOG_INFO);
     }
 
     void CANNode::sendMessage(const CANMessage& message) {
-        if (_connectedBus) {
-            _connectedBus->transmitMessage(message);
+        if (auto bus = _connectedBus.lock())
+        {
+            bus->transmitMessage(message);
         }
-        else {
+        else
+        {
             Logger::getInstance().log("Node " + _nodeName + " is not connected to any CAN Bus.", Logger::LOG_ERROR);
         }
     }
@@ -40,7 +48,10 @@ namespace cantools_cpp
         if (!exists) {
             // If no message with the same name exists, add it to the local storage and the connected bus
             _txMessages.push_back(msg);
-            _connectedBus->addMessage(msg);
+
+            auto bus = _connectedBus.lock();
+
+            bus->addMessage(msg);
         }
     }
 }

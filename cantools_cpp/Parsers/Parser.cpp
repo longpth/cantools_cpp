@@ -7,12 +7,13 @@
 #include "ExtraMessageLineParser.hpp"
 #include "SignalLineParser.hpp"
 #include "Logger.hpp"
+#include "CANBus.hpp"
 
 namespace cantools_cpp
 {
 
     Parser::Parser(std::shared_ptr<CANBusManager> busManager)
-        : _busManager(busManager) {// Transfer ownership with std::move
+        : _busManager(busManager) {
 
         auto nodeLineParserPtr = std::make_shared<NodeLineParser>();
         auto ignoreLineParserPtr = std::make_shared<IgnoreLineParser>();
@@ -55,6 +56,8 @@ namespace cantools_cpp
                 }
             }
         }
+
+        _busManager->getBus(busName)->build();
 
         file.close();
         logger.log("Finished loading database from " + fileDir, Logger::LOG_DEBUG);

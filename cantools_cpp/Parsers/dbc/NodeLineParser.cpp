@@ -32,6 +32,7 @@ namespace cantools_cpp
             while (nodeStream >> nodeName) {
                 // Add each node name to the CANBusManager
                 std::shared_ptr<CANNode> node = std::make_shared<CANNode>(nodeName, busName, *busManager.get());
+                node->attachToBus();
             }
         }
         else {

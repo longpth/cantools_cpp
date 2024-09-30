@@ -9,11 +9,13 @@ namespace cantools_cpp
     class CANBusManager;
     class CANBus;
 
-    class CANNode {
+    class CANNode: public std::enable_shared_from_this<CANNode> {
     private:
         std::string _nodeName;
-        std::shared_ptr<CANBus> _connectedBus;
+        std::weak_ptr<CANBus> _connectedBus;
         std::vector<std::shared_ptr<CANMessage>> _txMessages;
+
+        bool _isAttchedToBus;
 
     public:
         CANNode(const std::string& name, const std::string& busName, CANBusManager& busManager);
@@ -21,6 +23,8 @@ namespace cantools_cpp
         std::string getName() const {
             return _nodeName;
         }
+
+        void attachToBus();
 
         void addMessage(const std::shared_ptr<CANMessage>& msg);
 

@@ -12,7 +12,7 @@ wxEND_EVENT_TABLE()
 
 TabDatabaseView::TabDatabaseView(wxNotebook* parent)
     : wxPanel(parent, wxID_ANY), _busManager(std::make_shared<cantools_cpp::CANBusManager>()),
-    _parser(std::make_shared<cantools_cpp::Parser>(_busManager)) // Initialize parser with bus manager
+    _parser(std::make_unique<cantools_cpp::Parser>(_busManager)) // Initialize parser with bus manager
 {
     SetupLayout();
 }
@@ -51,14 +51,14 @@ void TabDatabaseView::SetupLayout()
     _signalsGrid->SetColLabelValue(9, "Minimum");
 
     // List control for CAN nodes
-    nodesList = new wxListCtrl(this, wxID_ANY, wxDefaultPosition, wxSize(600, 100), wxLC_REPORT);
-    nodesList->InsertColumn(0, "Node Name", wxLIST_FORMAT_LEFT, 200);
-    nodesList->InsertColumn(1, "Details", wxLIST_FORMAT_LEFT, 400);
+    _nodesList = new wxListCtrl(this, wxID_ANY, wxDefaultPosition, wxSize(600, 100), wxLC_REPORT);
+    _nodesList->InsertColumn(0, "Node Name", wxLIST_FORMAT_LEFT, 200);
+    _nodesList->InsertColumn(1, "Details", wxLIST_FORMAT_LEFT, 400);
 
     // Vertical box sizer for overall layout
     wxBoxSizer* vBox = new wxBoxSizer(wxVERTICAL);
     vBox->Add(hBoxTop, 0, wxEXPAND | wxALL, 5);
-    vBox->Add(nodesList, 0, wxEXPAND | wxALL, 5);
+    vBox->Add(_nodesList, 0, wxEXPAND | wxALL, 5);
     vBox->Add(_messagesGrid, 0, wxEXPAND | wxALL, 5);
     vBox->Add(_signalsGrid, 1, wxEXPAND | wxALL, 5);
 
@@ -90,7 +90,7 @@ void TabDatabaseView::OnLoadDBC(wxCommandEvent& event)
     }
 }
 
-void TabDatabaseView::PopulateData(const std::string& filePath)
+void TabDatabaseView::PopulateData(const std::string filePath)
 {
     // Load database from file
     _parser->loadDBC(filePath);
