@@ -22,17 +22,21 @@ Visual C++</br>
 CMake</br>
 
 #### Third-Party Libraries:
-wxWidgets: GUI development library. Download the stable release source from wxWidgets https://www.wxwidgets.org/downloads. </br>
+**wxWidgets:** GUI development library. Download the stable release source from wxWidgets https://www.wxwidgets.org/downloads. </br>
 
 Rename the downloaded folder to wxWidgetXXX, and place it in a directory, for example, C:\Users\<username>\wxWidgetXXX.</br>
-Add an environment variable with the value C:\Users\<username>\wxWidgetXXX.</br>
-CycloneDDS: DDS library.</br>
+Add an environment variable with the value C:\Users\username\wxWidgetXXX.</br>
 
-#### Compilation Steps:
+**CycloneDDS:** DDS library.</br>
+
+### Ubuntu
+T.B.D
+
+## Compilation Steps:
+
+### Windows
 
 Open Visual Studio 2022.</br>
 Select File > Open > Folder.</br>
 Choose the cantools_cpp folder.</br>
-
-### Ubuntu
-T.B.D
+Build all. </br>
