@@ -13,12 +13,12 @@ namespace cantools_cpp
         _connectedBus = busManager.getBus(busName);
         if (_connectedBus) {
             _connectedBus->addNode(std::make_shared<CANNode>(*this));
-            Logger::getInstance().log("Node " + _nodeName + " connected to CAN Bus " + busName, Logger::INFO);
+            Logger::getInstance().log("Node " + _nodeName + " connected to CAN Bus " + busName, Logger::LOG_INFO);
         }
     }
 
     void CANNode::receiveMessage(const CANMessage& message) {
-        Logger::getInstance().log("Node " + _nodeName + " received message ID: " + std::to_string(message.getId()) + " from Bus " + _connectedBus->getName(), Logger::INFO);
+        Logger::getInstance().log("Node " + _nodeName + " received message ID: " + std::to_string(message.getId()) + " from Bus " + _connectedBus->getName(), Logger::LOG_INFO);
     }
 
     void CANNode::sendMessage(const CANMessage& message) {
@@ -26,7 +26,7 @@ namespace cantools_cpp
             _connectedBus->transmitMessage(message);
         }
         else {
-            Logger::getInstance().log("Node " + _nodeName + " is not connected to any CAN Bus.", Logger::ERROR);
+            Logger::getInstance().log("Node " + _nodeName + " is not connected to any CAN Bus.", Logger::LOG_ERROR);
         }
     }
 

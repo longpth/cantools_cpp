@@ -6,9 +6,9 @@
 class GUIController
 {
 public:
-    GUIController(GUIModel* model, GUIView* view);
+    GUIController(GUIModel& model, GUIView& view);
 
 private:
-    GUIModel* _model;
-    GUIView* _view;
+    GUIModel& _model;
+    GUIView& _view;
 };

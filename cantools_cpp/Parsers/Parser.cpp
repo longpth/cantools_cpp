@@ -32,7 +32,7 @@ namespace cantools_cpp
         Logger& logger = Logger::getInstance();
 
         if (!file.is_open()) {
-            logger.log("Error: Could not open file " + fileDir, Logger::DEBUG);
+            logger.log("Error: Could not open file " + fileDir, Logger::LOG_DEBUG);
             return false;
         }
 
@@ -47,7 +47,7 @@ namespace cantools_cpp
             }
 
             // Process each valid line
-            logger.log("Read line: " + line, Logger::DEBUG);
+            logger.log("Read line: " + line, Logger::LOG_DEBUG);
 
             for (auto parser : _vLineParsers) {
                 if (parser->tryParse(line, _busManager, busName)) {
@@ -57,7 +57,7 @@ namespace cantools_cpp
         }
 
         file.close();
-        logger.log("Finished loading database from " + fileDir, Logger::DEBUG);
+        logger.log("Finished loading database from " + fileDir, Logger::LOG_DEBUG);
         return true;
     }
 }

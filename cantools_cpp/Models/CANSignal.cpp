@@ -27,7 +27,7 @@ namespace cantools_cpp
 
     // Display method
     void CANSignal::display() const {
-        Logger::getInstance().log("Signal: " + _name + ", Value: " + std::to_string(_value), Logger::INFO);
+        Logger::getInstance().log("Signal: " + _name + ", Value: " + std::to_string(_value), Logger::LOG_INFO);
     }
 
     void CANSignal::setParent(std::shared_ptr<CANMessage> parent)

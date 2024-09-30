@@ -2,5 +2,6 @@
 
 class GUIModel {
 public:
-    // You can extend this class later with GUI-related data if necessary
+    GUIModel() { /* Constructor logic */ }
+    ~GUIModel() { /* Cleanup logic */ } // Ensure this is public
 };

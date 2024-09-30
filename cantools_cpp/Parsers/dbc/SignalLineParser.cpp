@@ -15,7 +15,7 @@ namespace cantools_cpp
     bool SignalLineParser::tryParse(const std::string& line, std::shared_ptr<CANBusManager> busManager, const std::string& busName) {
         std::smatch match;
         if (!std::regex_match(line, match, signalRegex)) {
-            Logger::getInstance().log("Regex match failed for line: " + line, Logger::DEBUG);
+            Logger::getInstance().log("Regex match failed for line: " + line, Logger::LOG_DEBUG);
             return false;
         }
 
@@ -30,7 +30,7 @@ namespace cantools_cpp
 
         busManager->getBus(busName)->addSignal(signal);
 
-        Logger::getInstance().log("Signal added: " + name, Logger::DEBUG);
+        Logger::getInstance().log("Signal added: " + name, Logger::LOG_DEBUG);
         return true;
     }
 

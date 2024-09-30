@@ -15,10 +15,10 @@ namespace cantools_cpp
     void CANBusManager::createBus(const std::string& busName) {
         if (_busMap.find(busName) == _busMap.end()) {
             _busMap[busName] = std::make_shared<CANBus>(busName);
-            Logger::getInstance().log("CAN Bus " + busName + " created.", Logger::INFO);
+            Logger::getInstance().log("CAN Bus " + busName + " created.", Logger::LOG_INFO);
         }
         else {
-            Logger::getInstance().log("CAN Bus " + busName + " already exists.", Logger::INFO);
+            Logger::getInstance().log("CAN Bus " + busName + " already exists.", Logger::LOG_INFO);
         }
     }
 
@@ -27,7 +27,7 @@ namespace cantools_cpp
             return _busMap[busName];
         }
         else {
-            Logger::getInstance().log("CAN Bus " + busName + " not found.", Logger::ERROR);
+            Logger::getInstance().log("CAN Bus " + busName + " not found.", Logger::LOG_ERROR);
             return nullptr;
         }
     }

@@ -21,13 +21,13 @@ public:
     void PopulateData(const std::string& filePath);                    // Placeholder for populating CAN data
 
 private:
-    wxTextCtrl* filePathCtrl;               // Text control to show the loaded file path
-    wxButton* loadDBCButton;                // Button to load the DBC file
-    wxGrid* messagesGrid;                   // Grid for displaying CAN messages
-    wxGrid* signalsGrid;                    // Grid for displaying CAN signals
+    wxTextCtrl* _filePathCtrl;               // Text control to show the loaded file path
+    wxButton* _loadDBCButton;                // Button to load the DBC file
+    wxGrid* _messagesGrid;                   // Grid for displaying CAN messages
+    wxGrid* _signalsGrid;                    // Grid for displaying CAN signals
     wxListCtrl* nodesList;                  // List control for nodes
     std::shared_ptr<cantools_cpp::CANBusManager> _busManager;  // Shared pointer to CANBusManager
-    std::unique_ptr<cantools_cpp::Parser> _parser;              // Unique pointer to Parser
+    std::shared_ptr<cantools_cpp::Parser> _parser;              // Unique pointer to Parser
 
     void SetupLayout();                     // Method to set up the layout
 

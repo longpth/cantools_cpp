@@ -9,7 +9,7 @@ namespace cantools_cpp
     }
 
     void CANBus::transmitMessage(const CANMessage& message) {
-        Logger::getInstance().log("Transmitting message on CAN Bus: " + _busName, Logger::INFO);
+        Logger::getInstance().log("Transmitting message on CAN Bus: " + _busName, Logger::LOG_INFO);
         for (auto& node : _nodes) {
             node->receiveMessage(message);
         }
@@ -86,5 +86,23 @@ namespace cantools_cpp
     std::vector<std::shared_ptr<CANMessage>> CANBus::getAllMessages()
     {
         return _allMessages;
+    }
+
+    void CANBus::build()
+    {
+        for (auto message : _allMessages)
+        {
+            uint32_t messageId = message->getId();
+
+            std::map<uint32_t, std::vector<std::shared_ptr<CANSignal>>>::iterator it = _allSignals.find(messageId);
+
+            if (it != _allSignals.end())
+            {
+                for (auto sinal : it->second)
+                {
+                    message->addSignal(sinal);
+                }
+            }
+        }
     }
 }

@@ -18,11 +18,12 @@ include_directories(${PROJECT_SOURCE_DIR}/Parsers/dbc)
 include_directories(${PROJECT_SOURCE_DIR}/Helpers)
 
 # Add subdirectories
+add_subdirectory(Helpers)
 add_subdirectory(Models)
 add_subdirectory(Parsers)
 add_subdirectory(Parsers/dbc)
 
 # Create the static library
-add_library(cantools_cpp STATIC main.cpp "Helpers/Logger.cpp")
+add_library(cantools_cpp STATIC main.cpp)
 
-target_link_libraries(cantools_cpp PUBLIC CANModels CANParsers DBCParsers)
+target_link_libraries(cantools_cpp PUBLIC CANModels CANParsers DBCParsers Helpers)

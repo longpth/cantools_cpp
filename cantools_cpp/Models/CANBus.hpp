@@ -41,5 +41,7 @@ namespace cantools_cpp
         std::shared_ptr<CANMessage> getMessageById(const uint32_t id) const;
 
         std::vector<std::shared_ptr<CANMessage>> getAllMessages();
+
+        void build();
     };
 }
