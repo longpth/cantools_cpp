@@ -1,26 +1,13 @@
-﻿# Set the minimum CMake version required
+# Set the minimum CMake version required
 cmake_minimum_required(VERSION 3.10)
 
-# Project name and version
-project(cantools_cpp VERSION 1.0)
+# Define the top-level project
+project(cantools_cpp_solution VERSION 1.0)
 
-# Set the output directory for build artifacts
-set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/out)
-
-# Specify the C++ standard
+# Specify the C++ standard (if needed for the top-level)
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED True)
 
-# Include directories
-include_directories(${PROJECT_SOURCE_DIR}/Models)
-include_directories(${PROJECT_SOURCE_DIR}/Parsers)
-include_directories(${PROJECT_SOURCE_DIR}/Parsers/dbc)
-include_directories(${PROJECT_SOURCE_DIR}/Helpers)
-
-# Add subdirectories
-add_subdirectory(Models)
-add_subdirectory(Parsers)
-
-# Add the main executable
-add_executable(cantools_cpp main.cpp "Helpers/Logger.cpp")
-target_link_libraries(cantools_cpp PUBLIC CANModels CANParsers)
+# Add subdirectories for the two projects
+add_subdirectory(cantools_cpp)
+add_subdirectory(cantools_cpp_gui)

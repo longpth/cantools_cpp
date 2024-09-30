@@ -5,6 +5,14 @@
 
 class CANMessage;
 
+enum DbcValueType
+{
+    Signed,
+    Unsigned,
+    IEEEFloat,
+    IEEEDouble
+};
+
 class CANSignal {
 private:
     std::string _name;
@@ -15,6 +23,8 @@ private:
     uint64_t _value;
 
     std::shared_ptr<CANMessage> _parent;
+
+    DbcValueType _valueType;
 
 public:
     // Constructor
@@ -27,6 +37,7 @@ public:
     float getFactor() const;
     float getOffset() const;
     uint64_t getValue() const;
+    DbcValueType getValueType() const;
 
     // Setters
     void setName(const std::string& name);
@@ -35,6 +46,7 @@ public:
     void setFactor(float factor);
     void setOffset(float offset);
     void setValue(uint64_t value);
+    void setValueType(DbcValueType val);
 
     // Display method
     void display() const;

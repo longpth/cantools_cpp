@@ -3,6 +3,7 @@
 #include "CANNode.hpp"
 #include "CANBusManager.hpp"
 #include "CANBus.hpp"
+#include "Logger.hpp"
 
 
 CANNode::CANNode(const std::string& name, const std::string& busName, CANBusManager& busManager)
@@ -10,12 +11,12 @@ CANNode::CANNode(const std::string& name, const std::string& busName, CANBusMana
     _connectedBus = busManager.getBus(busName);
     if (_connectedBus) {
         _connectedBus->addNode(std::make_shared<CANNode>(*this));
-        std::cout << "Node " << _nodeName << " connected to CAN Bus " << busName << std::endl;
+        Logger::getInstance().log("Node " + _nodeName + " connected to CAN Bus " + busName, Logger::INFO);
     }
 }
 
 void CANNode::receiveMessage(const CANMessage& message) {
-    std::cout << "Node " << _nodeName << " received message ID: " << message.getId() << " from Bus " << _connectedBus->getName() << std::endl;
+    Logger::getInstance().log("Node " + _nodeName + " received message ID: " + std::to_string(message.getId()) + " from Bus " + _connectedBus->getName(), Logger::INFO);
 }
 
 void CANNode::sendMessage(const CANMessage& message) {
@@ -23,7 +24,7 @@ void CANNode::sendMessage(const CANMessage& message) {
         _connectedBus->transmitMessage(message);
     }
     else {
-        std::cerr << "Node " << _nodeName << " is not connected to any CAN Bus." << std::endl;
+        Logger::getInstance().log("Node " + _nodeName + " is not connected to any CAN Bus.", Logger::ERROR);
     }
 }
 

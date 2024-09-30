@@ -24,11 +24,17 @@ public:
 
     std::string getName() const;
 
+    std::vector<std::shared_ptr<CANNode>> getNodes() {
+        return _nodes;
+    }
+
     std::shared_ptr<CANNode> getNodeByName(const std::string& nodeName) const;
 
     void addMessage(const std::shared_ptr<CANMessage>& message);
 
     void addSignal(const std::shared_ptr<CANSignal>& signal);
+
+    void addSignalValueType(uint32_t messageId, std::string signalName, DbcValueType type);
 
     std::shared_ptr<CANMessage> getMessageById(const uint32_t id) const;
 };

@@ -18,4 +18,8 @@ public:
 
     void createBus(const std::string& busName);
     std::shared_ptr<CANBus> getBus(const std::string& busName);
+    std::unordered_map<std::string, std::shared_ptr<CANBus>> getBuses()
+    {
+        return _busMap;
+    }
 };

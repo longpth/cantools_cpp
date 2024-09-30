@@ -2,6 +2,7 @@
 #pragma once
 #include <vector>
 #include <memory>
+#include <map>
 #include "CANSignal.hpp"
 #include "SignalGroup.hpp"
 
@@ -16,6 +17,8 @@ private:
     int _dlc;
     std::string _transmitter;
     std::vector<std::string> _additionalTransmitters;
+    static const std::map<uint8_t, uint8_t> _dlc2datalength;
+    std::shared_ptr<uint8_t> _data;
 
 public:
     CANMessage(uint32_t id);

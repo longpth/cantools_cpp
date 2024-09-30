@@ -2,6 +2,7 @@
 //
 
 #include "CANBusManager.hpp"
+#include "CANBus.hpp"
 #include "Parser.hpp"
 
 using namespace std;
@@ -15,6 +16,8 @@ int main() {
 
     // Load database from file
     parser.loadDBC("../../../../DbcFiles/tesla_can.dbc");
+
+    auto bus = busManager->getBus("tesla_can");
 
     return 0;
 }

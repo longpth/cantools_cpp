@@ -68,3 +68,14 @@ std::shared_ptr<CANMessage> CANBus::getMessageById(const uint32_t id) const {
         return nullptr;
     }
 }
+
+void CANBus::addSignalValueType(uint32_t messageId, std::string signalName, DbcValueType type) {
+    auto it = _allSignals.find(messageId);
+    if (it != _allSignals.end())
+    {
+        auto it2 = std::find_if(_allSignals[messageId].begin(), _allSignals[messageId].end(), [signalName](const std::shared_ptr<CANSignal>& signal) { return signalName == signal->getName(); });
+        if (it2 != _allSignals[messageId].end()) {
+            (*it2)->setValueType(type);
+        }
+    }
+}

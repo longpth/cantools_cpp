@@ -1,5 +1,24 @@
 #include "CANMessage.hpp"
 
+const std::map<uint8_t, uint8_t> CANMessage::_dlc2datalength = {
+{ 0,0 },
+{ 1,1 },
+{ 2,2 },
+{ 3,3 },
+{ 4,4 },
+{ 5,5 },
+{ 6,6 },
+{ 7,7 },
+{ 8,8 },
+{ 9,12 },
+{ 10,16 },
+{ 11,20 },
+{ 12,24 },
+{ 13,32 },
+{ 14,48 },
+{ 15,64 },
+};
+
 CANMessage::CANMessage(uint32_t id) : _id(id) {}
 
 void CANMessage::addSignal(const std::shared_ptr<CANSignal>& signal) {

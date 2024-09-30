@@ -26,7 +26,7 @@ bool SignalLineParser::tryParse(const std::string& line, std::shared_ptr<CANBusM
 
     busManager->getBus(busName)->addSignal(signal);
 
-    Logger::getInstance().log("Signal added: " + name, Logger::INFO);
+    Logger::getInstance().log("Signal added: " + name, Logger::DEBUG);
     return true;
 }
 
