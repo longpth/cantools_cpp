@@ -14,6 +14,12 @@ namespace cantools_cpp
         IEEEDouble
     };
 
+    enum ByteOrder
+    {
+        ByteOrder_MSB,
+        ByteOrder_LSB
+    };
+
     class CANSignal {
     private:
         std::string _name;
@@ -22,6 +28,12 @@ namespace cantools_cpp
         float _factor;
         float _offset;
         uint64_t _value;
+        uint8_t _byteOrder;
+        float _minVal;
+        float _maxVal;
+        std::string _unit;
+        std::string _receiver;
+        std::string _multiplexer;
 
         std::weak_ptr<CANMessage> _parent;
 
@@ -29,7 +41,7 @@ namespace cantools_cpp
 
     public:
         // Constructor
-        CANSignal(const std::string& name, uint8_t startBit, uint8_t length, float factor, float offset);
+        CANSignal(const std::string& name, uint8_t startBit, uint8_t length, float factor, float offset, float minVal, float maxVal, std::string unit, uint8_t byteOrder, uint8_t valType, std::string receiver, std::string multiplexer);
 
         // Getters
         std::string getName() const;
@@ -39,6 +51,13 @@ namespace cantools_cpp
         float getOffset() const;
         uint64_t getValue() const;
         DbcValueType getValueType() const;
+        std::weak_ptr<CANMessage> getParent() const;
+        uint8_t CANSignal::getByteOrder() const;
+        float CANSignal::getMinVal() const;
+        float CANSignal::getMaxVal() const;
+        std::string getUnit() const;
+        std::string getReceiver() const;
+        std::string getMultiplexer() const;
 
         // Setters
         void setName(const std::string& name);

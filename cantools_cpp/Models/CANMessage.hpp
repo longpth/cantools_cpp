@@ -43,6 +43,8 @@ namespace cantools_cpp
 
         int getDlc() const;
 
+        std::vector<std::shared_ptr<CANSignal>> getSignals();
+
         float getCycle() const;
 
         void setId(uint32_t id);

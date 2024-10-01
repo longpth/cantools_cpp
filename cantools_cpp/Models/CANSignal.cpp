@@ -4,8 +4,11 @@
 namespace cantools_cpp
 {
     // Constructor
-    CANSignal::CANSignal(const std::string& name, uint8_t startBit, uint8_t length, float factor, float offset)
-        : _name(name), _startBit(startBit), _length(length), _factor(factor), _offset(offset), _value(0), _valueType(Signed) {}
+    CANSignal::CANSignal(const std::string& name, uint8_t startBit, uint8_t length, float factor, float offset, float minVal, float maxVal, std::string unit, uint8_t byteOrder, uint8_t valType, std::string receiver, std::string multiplexer)
+        : _name(name), _startBit(startBit), _length(length), _factor(factor), _offset(offset), _minVal(minVal), _maxVal(maxVal), _unit(unit), _byteOrder(byteOrder), _receiver(receiver), _value(0), _valueType(DbcValueType(valType)), _multiplexer(multiplexer)
+    {
+
+    }
 
     // Getters
     std::string CANSignal::getName() const { return _name; }
@@ -15,6 +18,12 @@ namespace cantools_cpp
     float CANSignal::getOffset() const { return _offset; }
     uint64_t CANSignal::getValue() const { return _value; }
     DbcValueType CANSignal::getValueType() const { return _valueType; }
+    uint8_t CANSignal::getByteOrder() const { return _byteOrder; }
+    float CANSignal::getMinVal() const { return _minVal; }
+    float CANSignal::getMaxVal() const { return _maxVal; }
+    std::string CANSignal::getUnit() const { return _unit; }
+    std::string CANSignal::getReceiver() const { return _receiver; }
+    std::string CANSignal::getMultiplexer() const { return _multiplexer; }
 
     // Setters
     void CANSignal::setName(const std::string& name) { _name = name; }
@@ -33,5 +42,9 @@ namespace cantools_cpp
     void CANSignal::setParent(std::weak_ptr<CANMessage> parent)
     {
         _parent = parent;
+    }
+
+    std::weak_ptr<CANMessage> CANSignal::getParent() const {
+        return _parent;
     }
 }

@@ -1,6 +1,6 @@
 ﻿# CAN TOOLS in CPP
 
-DBC files: taken from https://github.com/EFeru/DbcParser.
+C++ implementation of can tools ...
 
 ## Project Structure
 
@@ -40,3 +40,9 @@ Open Visual Studio 2022.</br>
 Select File > Open > Folder.</br>
 Choose the cantools_cpp folder.</br>
 Build all. </br>
+
+## DBC files 
+Taken from https://github.com/EFeru/DbcParser.
+
+## Reference
+https://github.com/EFeru/DbcParser

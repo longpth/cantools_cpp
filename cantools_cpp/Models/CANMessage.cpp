@@ -91,4 +91,9 @@ namespace cantools_cpp
     {
         return _cycle;
     }
+
+    std::vector<std::shared_ptr<CANSignal>> CANMessage::getSignals()
+    {
+        return _signals;
+    }
 }

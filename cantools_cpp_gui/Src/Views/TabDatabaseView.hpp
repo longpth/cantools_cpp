@@ -19,6 +19,7 @@ public:
 
     void OnLoadDBC(wxCommandEvent& event);  // Event handler for loading a DBC file
     void PopulateData(const std::string filePath);                    // Placeholder for populating CAN data
+    void OnGridLabelLeftClick(wxGridEvent& event);
 
 private:
     wxTextCtrl* _filePathCtrl;               // Text control to show the loaded file path
