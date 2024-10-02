@@ -1,4 +1,11 @@
-// Parser.cpp
+/**
+ * @file Parser.cpp
+ * @brief
+ *
+ * @author Long Pham
+ * @date 10/02/2024
+ */
+
 #include <filesystem>
 #include "Parser.hpp"
 #include "NodeLineParser.hpp"

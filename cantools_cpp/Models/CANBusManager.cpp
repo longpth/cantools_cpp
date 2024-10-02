@@ -1,4 +1,11 @@
-// CANBusManager.cpp
+/**
+ * @file CANBusManager.cpp
+ * @brief Declaration of the CANBusManager class for managing multiple CAN buses in the CAN tools application.
+ *
+ * @author Long Pham
+ * @date 10/02/2024
+ */
+
 #include <iostream>
 #include "CANBusManager.hpp"
 #include "CANBus.hpp"

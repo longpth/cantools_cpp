@@ -1,4 +1,11 @@
-// SignalGroup.h
+/**
+ * @file SignalGroup.hpp
+ * @brief
+ *
+ * @author Long Pham
+ * @date 10/02/2024
+ */
+
 #pragma once
 #include <vector>
 #include <memory>

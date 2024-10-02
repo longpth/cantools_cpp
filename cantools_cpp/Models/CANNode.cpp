@@ -1,3 +1,11 @@
+/**
+ * @file CANNode.cpp
+ * @brief Declaration of the CANNode class for representing a node in the CAN network.
+ *
+ * @author Long Pham
+ * @date 10/02/2024
+ */
+
 #include <string>
 #include <algorithm>
 #include "CANNode.hpp"
@@ -9,14 +17,14 @@ namespace cantools_cpp
 {
 
     CANNode::CANNode(const std::string& name, const std::string& busName, CANBusManager& busManager)
-        : _nodeName(name), _isAttchedToBus(false) {
+        : _nodeName(name), _isAttachedToBus(false) {
         _connectedBus = busManager.getBus(busName);
     }
 
     void CANNode::attachToBus()
     {
         auto bus = _connectedBus.lock();
-        if (bus && !_isAttchedToBus) {
+        if (bus && !_isAttachedToBus) {
             bus->addNode(shared_from_this());
             Logger::getInstance().log("Node " + _nodeName + " connected to CAN Bus " + bus->getName(), Logger::LOG_INFO);
         }

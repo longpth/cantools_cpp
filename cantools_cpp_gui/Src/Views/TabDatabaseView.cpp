@@ -29,6 +29,16 @@ enum {
     COLUMN_SIGNAL_GRID_RECEIVER           // "Receiver"
 };
 
+enum {
+    COLUMN_MESSAGE_GRID_ID = 0,
+    COLUMN_MESSAGE_GRID_NAME,
+    COLUMN_MESSAGE_GRID_DLC,
+    COLUMN_MESSAGE_GRID_TRANSMITTER,
+    COLUMN_MESSAGE_GRID_CYCLE,
+    COLUMN_MESSAGE_GRID_BUS,
+    COLUMN_MESSAGE_GRID_DATA,
+};
+
 // Event table to handle the button click and grid cell click events
 wxBEGIN_EVENT_TABLE(TabDatabaseView, wxPanel)
     EVT_BUTTON(ID_LoadDBC, TabDatabaseView::OnLoadDBC) // Handle load dbc
@@ -107,8 +117,11 @@ void TabDatabaseView::SetupLayout()
     // Enable grid editing
     _messagesGrid->EnableEditing(true);
 
-    // Bind the cell change event
+    // Bind the message cell change event
     _messagesGrid->Bind(wxEVT_GRID_CELL_CHANGED, &TabDatabaseView::OnMessageGridCellChange, this);
+
+    // Bind the signal cell change event
+    _signalsGrid->Bind(wxEVT_GRID_CELL_CHANGED, &TabDatabaseView::OnSignalGridCellChange, this);
 }
 
 void TabDatabaseView::OnLoadDBC(wxCommandEvent& event)
@@ -152,13 +165,13 @@ void TabDatabaseView::PopulateData(std::vector<std::shared_ptr<cantools_cpp::CAN
     // Populate the grid with CAN message data
     for (size_t i = 0; i < messages.size(); ++i) {
         const auto& message = messages[i];
-        _messagesGrid->SetCellValue(i, 0, wxString::Format("0x%X", message->getId())); _messagesGrid->SetReadOnly(i, 0); // ID
-        _messagesGrid->SetCellValue(i, 1, message->getName()); // Name
-        _messagesGrid->AutoSizeColumn(1);  // Resize the specific column (index 1)
-        _messagesGrid->SetCellValue(i, 2, wxString::Format("%d", message->getDlc())); // DLC
-        _messagesGrid->SetCellValue(i, 3, message->getTransmitter()); // Transmitter
-        _messagesGrid->SetCellValue(i, 4, wxString::Format("%d", static_cast<int>(message->getCycle()))); // CycleTime
-        _messagesGrid->SetCellValue(i, 5, busName); _messagesGrid->SetReadOnly(i, 5); // Bus 
+        _messagesGrid->SetCellValue(i, COLUMN_MESSAGE_GRID_ID, wxString::Format("0x%X", message->getId())); _messagesGrid->SetReadOnly(i, COLUMN_MESSAGE_GRID_ID); // ID
+        _messagesGrid->SetCellValue(i, COLUMN_MESSAGE_GRID_NAME, message->getName()); // Name
+        _messagesGrid->AutoSizeColumn(COLUMN_MESSAGE_GRID_NAME);  // Resize the specific column (index 1)
+        _messagesGrid->SetCellValue(i, COLUMN_MESSAGE_GRID_DLC, wxString::Format("%d", message->getDlc())); // DLC
+        _messagesGrid->SetCellValue(i, COLUMN_MESSAGE_GRID_TRANSMITTER, message->getTransmitter()); // Transmitter
+        _messagesGrid->SetCellValue(i, COLUMN_MESSAGE_GRID_CYCLE, wxString::Format("%d", static_cast<int>(message->getCycle()))); // CycleTime
+        _messagesGrid->SetCellValue(i, COLUMN_MESSAGE_GRID_BUS, busName); _messagesGrid->SetReadOnly(i, COLUMN_MESSAGE_GRID_BUS); // Bus 
 
         std::shared_ptr<uint8_t[]> data = message->getData();
 
@@ -182,6 +195,10 @@ void TabDatabaseView::PopulateData(std::vector<std::shared_ptr<cantools_cpp::CAN
 
 }
 
+void TabDatabaseView::OnSignalGridCellChange(wxGridEvent& event) {
+
+}
+
 void TabDatabaseView::OnMessageGridCellChange(wxGridEvent& event) {
     int row = event.GetRow();
     int col = event.GetCol();
@@ -197,19 +214,19 @@ void TabDatabaseView::OnMessageGridCellChange(wxGridEvent& event) {
     std::vector<uint8_t> data;
 
     switch (col) {
-        case 1: // Message Name
+        case COLUMN_MESSAGE_GRID_NAME: // Message Name
             message->setName(newValue.ToStdString());
             break;
-        case 2: // DLC (Data Length Code)
+        case COLUMN_MESSAGE_GRID_DLC: // DLC (Data Length Code)
             message->setDlc(std::stoi(newValue.ToStdString()));
             break;
-        case 3: // Transmitter
+        case COLUMN_MESSAGE_GRID_TRANSMITTER: // Transmitter
             message->setTransmitter(newValue.ToStdString());
             break;
-        case 4: // Cycle Time
+        case COLUMN_MESSAGE_GRID_CYCLE: // Cycle Time
             message->setCycle(std::stoi(newValue.ToStdString()));
             break;
-        case 6: // Data (Hex string)
+        case COLUMN_MESSAGE_GRID_DATA: // Data (Hex string)
             data = cantools_cpp::Util::getInstance().convertFromHexString(newValue.ToStdString());
             message->setData(data.data(), data.size());
             break;
@@ -274,6 +291,15 @@ void TabDatabaseView::OnGridLabelLeftClick(wxGridEvent& event) {
                     _signalsGrid->SetCellValue(i, COLUMN_SIGNAL_GRID_MAXIMUM, wxString::Format("%f", signal->getMaxVal())); // Maximum
                     _signalsGrid->SetCellValue(i, COLUMN_SIGNAL_GRID_UNIT, signal->getUnit()); // Unit
                     _signalsGrid->SetCellValue(i, COLUMN_SIGNAL_GRID_RECEIVER, signal->getReceiver()); // Receiver
+
+                    for (int j = 0; j < _signalsGrid->GetNumberCols(); j++)
+                    {
+                        if (j != COLUMN_SIGNAL_GRID_RAWVAL && j != COLUMN_SIGNAL_GRID_PHYSICALVAL)
+                        {
+                            _signalsGrid->SetReadOnly(i,j);
+                        }
+                    }
+
                     i++;
                 }
             }

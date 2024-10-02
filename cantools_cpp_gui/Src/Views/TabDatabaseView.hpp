@@ -26,6 +26,7 @@ public:
     void PopulateData(std::vector<std::shared_ptr<cantools_cpp::CANNode>> nodes, std::vector<std::shared_ptr<cantools_cpp::CANMessage>> messages, std::string busName);                    // Placeholder for populating CAN data
     void OnGridLabelLeftClick(wxGridEvent& event);
     void OnMessageGridCellChange(wxGridEvent& event);
+    void OnSignalGridCellChange(wxGridEvent& event);
 
     virtual void UpdateMessageGrid(std::string busName, uint32_t messageId) override;
     virtual void UpdateSignalGrid(std::string busName, uint32_t messageId, std::string signalName) override;

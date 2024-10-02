@@ -1,3 +1,10 @@
+/**
+ * @file CANSignal.hpp
+ * @brief Definition of the CANSignal class for handling CAN message signals.
+ * @author Long Pham
+ * @date 10/02/2024
+ */
+
 #pragma once
 #include <string>
 #include <memory>
@@ -8,25 +15,38 @@ namespace cantools_cpp
 {
     class CANMessage;
 
+    /**
+     * @enum DbcValueType
+     * @brief Specifies the value type of a CAN signal (signed, unsigned, or floating-point types).
+     */
     enum DbcValueType
     {
-        Signed,
-        Unsigned,
-        IEEEFloat,
-        IEEEDouble
+        Signed,     ///< Signed integer value
+        Unsigned,   ///< Unsigned integer value
+        IEEEFloat,  ///< IEEE 754 single-precision floating-point value
+        IEEEDouble  ///< IEEE 754 double-precision floating-point value
     };
 
+    /**
+     * @enum ByteOrder
+     * @brief Specifies the byte order of a CAN signal.
+     */
     enum ByteOrder
     {
-        ByteOrder_MSB,
-        ByteOrder_LSB
+        ByteOrder_MSB, ///< Most Significant Byte first (big-endian)
+        ByteOrder_LSB  ///< Least Significant Byte first (little-endian)
     };
 
+    /**
+     * @class CANSignal
+     * @brief Represents a signal within a CAN message. Handles signal decoding, value conversion, and observer notification.
+     */
     class CANSignal {
 
     public:
         void addObserver(IBusObserver* observer);
         void removeObserver(IBusObserver* observer);
+
         // Constructor
         CANSignal(const std::string& name, uint8_t startBit, uint8_t length, float factor, float offset, float minVal, float maxVal, std::string unit, uint8_t byteOrder, uint8_t valType, std::string receiver, std::string multiplexer);
 
@@ -40,9 +60,9 @@ namespace cantools_cpp
         double getPhysicalValue() const;
         DbcValueType getValueType() const;
         std::weak_ptr<CANMessage> getParent() const;
-        uint8_t CANSignal::getByteOrder() const;
-        float CANSignal::getMinVal() const;
-        float CANSignal::getMaxVal() const;
+        uint8_t getByteOrder() const;
+        float getMinVal() const;
+        float getMaxVal() const;
         std::string getUnit() const;
         std::string getReceiver() const;
         std::string getMultiplexer() const;
@@ -64,14 +84,16 @@ namespace cantools_cpp
 
         void decode(const uint8_t* data);
 
+        std::vector<uint8_t> encode();
+
     private:
         void notifyObserver();
 
-        std::vector<IBusObserver* > _observers;
+        std::vector<IBusObserver*> _observers;
 
         std::string _name;
-        uint8_t _startBit;
-        uint8_t _length;
+        uint16_t _startBit;
+        uint16_t _length;
         float _factor;
         float _offset;
         uint64_t _rawValue;

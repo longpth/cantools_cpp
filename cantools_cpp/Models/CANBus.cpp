@@ -1,3 +1,11 @@
+/**
+ * @file CANBus.cpp
+ * @brief Implementation of the CANBus class for managing CAN nodes and messages in the CAN tools application.
+ *
+ * @author Long Pham
+ * @date 10/02/2024
+ */
+
 #include "CANBus.hpp"
 #include "Logger.hpp"
 
