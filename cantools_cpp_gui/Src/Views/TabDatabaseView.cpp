@@ -2,6 +2,8 @@
 #include <wx/filename.h>
 #include "Logger.hpp"
 #include "CANMessage.hpp"
+#include "Util.hpp"
+#include "CANViewModel.hpp"
 
 enum {
     ID_LoadDBC = 1001,  // Event ID for the Load DBC button
@@ -15,10 +17,17 @@ wxBEGIN_EVENT_TABLE(TabDatabaseView, wxPanel)
 wxEND_EVENT_TABLE()
 
 TabDatabaseView::TabDatabaseView(wxNotebook* parent)
-    : wxPanel(parent, wxID_ANY), _busManager(std::make_shared<cantools_cpp::CANBusManager>()),
-    _parser(std::make_unique<cantools_cpp::Parser>(_busManager)) // Initialize parser with bus manager
+    : IView(parent) // Initialize parser with bus manager
 {
     SetupLayout();
+    //_canViewModel = std::make_shared<CANViewModel>();
+    //_canViewModel->addObserver(this);
+}
+
+void TabDatabaseView::setViewModel(std::shared_ptr<CANViewModel> canViewModel)
+{
+    _canViewModel = canViewModel;
+    _canViewModel->addObserver(this);
 }
 
 void TabDatabaseView::SetupLayout()
@@ -33,17 +42,18 @@ void TabDatabaseView::SetupLayout()
 
     // Grid for CAN messages
     _messagesGrid = new wxGrid(this, wxID_ANY, wxDefaultPosition, wxSize(600, 150));
-    _messagesGrid->CreateGrid(5, 6); // Placeholder grid with 5 rows and 6 columns
+    _messagesGrid->CreateGrid(5, 7); // Placeholder grid with 5 rows and 6 columns
     _messagesGrid->SetColLabelValue(0, "ID");
     _messagesGrid->SetColLabelValue(1, "Name");
     _messagesGrid->SetColLabelValue(2, "DLC");
     _messagesGrid->SetColLabelValue(3, "Transmitter");
     _messagesGrid->SetColLabelValue(4, "CycleTime");
     _messagesGrid->SetColLabelValue(5, "Bus");
+    _messagesGrid->SetColLabelValue(6, "Data");
 
     // Grid for CAN signals
     _signalsGrid = new wxGrid(this, wxID_ANY, wxDefaultPosition, wxSize(600, 300));
-    _signalsGrid->CreateGrid(10, 13); // Placeholder grid with 10 rows and 12 columns
+    _signalsGrid->CreateGrid(10, 15); // Placeholder grid with 10 rows and 15 columns
     _signalsGrid->SetColLabelValue(0, "ID");
     _signalsGrid->SetColLabelValue(1, "Name");
     _signalsGrid->SetColLabelValue(2, "StartBit");
@@ -51,12 +61,14 @@ void TabDatabaseView::SetupLayout()
     _signalsGrid->SetColLabelValue(4, "ByteOrder");
     _signalsGrid->SetColLabelValue(5, "IsSigned");
     _signalsGrid->SetColLabelValue(6, "InitialValue");
-    _signalsGrid->SetColLabelValue(7, "Factor");
-    _signalsGrid->SetColLabelValue(8, "Offset");
-    _signalsGrid->SetColLabelValue(9, "Minimum");
-    _signalsGrid->SetColLabelValue(10, "Maximum");
-    _signalsGrid->SetColLabelValue(11, "Unit");
-    _signalsGrid->SetColLabelValue(12, "Receiver");
+    _signalsGrid->SetColLabelValue(7, "Raw Value");
+    _signalsGrid->SetColLabelValue(8, "Physical value");
+    _signalsGrid->SetColLabelValue(9, "Factor");
+    _signalsGrid->SetColLabelValue(10, "Offset");
+    _signalsGrid->SetColLabelValue(11, "Minimum");
+    _signalsGrid->SetColLabelValue(12, "Maximum");
+    _signalsGrid->SetColLabelValue(13, "Unit");
+    _signalsGrid->SetColLabelValue(14, "Receiver");
 
     // List control for CAN nodes
     _nodesList = new wxListCtrl(this, wxID_ANY, wxDefaultPosition, wxSize(600, 100), wxLC_REPORT);
@@ -90,29 +102,21 @@ void TabDatabaseView::OnLoadDBC(wxCommandEvent& event)
         _filePathCtrl->SetValue(filePath);
 
         // Call PopulateData with the file path
-        PopulateData(filePath.ToStdString()); // Convert wxString to std::string
+        _canViewModel->loadCANData(filePath.ToStdString()); // Convert wxString to std::string
     }
     else {
         // If the file path control is not empty, get the current path and populate data
-        PopulateData(_filePathCtrl->GetValue().ToStdString()); // Convert wxString to std::string
+        _canViewModel->loadCANData(_filePathCtrl->GetValue().ToStdString()); // Convert wxString to std::string
     }
 }
 
-void TabDatabaseView::PopulateData(const std::string filePath)
+void TabDatabaseView::Update(std::vector<std::shared_ptr<cantools_cpp::CANNode>> nodes, std::vector<std::shared_ptr<cantools_cpp::CANMessage>> messages, std::string busName)
 {
-    // Load database from file
-    _parser->loadDBC(filePath);
+    PopulateData(nodes, messages, busName);
+}
 
-    // Extract the bus name from the file name (without the extension)
-    wxFileName fileName(filePath);
-    std::string busName = fileName.GetName().ToStdString(); // Get the file name without extension
-
-    // Access the bus using the extracted bus name
-    auto bus = _busManager->getBus(busName);
-
-    // Retrieve all messages
-    auto messages = bus->getAllMessages();
-
+void TabDatabaseView::PopulateData(std::vector<std::shared_ptr<cantools_cpp::CANNode>> nodes, std::vector<std::shared_ptr<cantools_cpp::CANMessage>> messages, std::string busName)
+{
     // Clear the previous data in the grid
     _messagesGrid->ClearGrid(); // Clear existing data
     _messagesGrid->DeleteRows(0, _messagesGrid->GetNumberRows()); // Remove all rows
@@ -125,14 +129,19 @@ void TabDatabaseView::PopulateData(const std::string filePath)
         const auto& message = messages[i];
         _messagesGrid->SetCellValue(i, 0, wxString::Format("0x%X", message->getId())); // ID
         _messagesGrid->SetCellValue(i, 1, message->getName()); // Name
+        _messagesGrid->AutoSizeColumn(1);  // Resize the specific column (index 1)
         _messagesGrid->SetCellValue(i, 2, wxString::Format("%d", message->getDlc())); // DLC
         _messagesGrid->SetCellValue(i, 3, message->getTransmitter()); // Transmitter
         _messagesGrid->SetCellValue(i, 4, wxString::Format("%d", static_cast<int>(message->getCycle()))); // CycleTime
-        _messagesGrid->SetCellValue(i, 5, busName); // Bus name
-    }
+        _messagesGrid->SetCellValue(i, 5, busName); // Bus 
 
-    // Retrieve all nodes (ECUs)
-    auto nodes = bus->getNodes();
+        std::shared_ptr<uint8_t[]> data = message->getData();
+
+        std::string dataStr = cantools_cpp::Util::getInstance().ConvertToHexString(data, message->getLength());
+        _messagesGrid->SetCellValue(i, 6, dataStr); // Bus
+        // Automatically resize the column to fit the data
+        _messagesGrid->AutoSizeColumn(6);  // Resize the specific column (index 6)
+    }
 
     // Clear the previous data in the nodes list
     _nodesList->DeleteAllItems();
@@ -159,7 +168,7 @@ void TabDatabaseView::OnGridLabelLeftClick(wxGridEvent& event) {
         cantools_cpp::Logger::getInstance().log("Selected message ID: " + messageId);
 
         // Access the bus using the extracted bus name
-        auto bus = _busManager->getBus(busName);
+        auto bus = _canViewModel->getBusMan()->getBus(busName);
 
         // Retrieve all messages
         auto messages = bus->getAllMessages();
@@ -186,17 +195,18 @@ void TabDatabaseView::OnGridLabelLeftClick(wxGridEvent& event) {
                 {
                     _signalsGrid->SetCellValue(i, 0, wxString::Format("0x%X", signal->getParent().lock()->getId()));
                     _signalsGrid->SetCellValue(i, 1, signal->getName());
+                    _signalsGrid->AutoSizeColumn(1);  // Resize the specific column (index 1)
                     _signalsGrid->SetCellValue(i, 2, wxString::Format("%d", signal->getStartBit()));
                     _signalsGrid->SetCellValue(i, 3, wxString::Format("%d", signal->getLength()));
                     _signalsGrid->SetCellValue(i, 4, wxString::Format("%d", signal->getByteOrder()));
                     _signalsGrid->SetCellValue(i, 5, wxString::Format("%d", signal->getValueType()));
                     //_signalsGrid->SetCellValue(i, 6, "InitialValue");
-                    _signalsGrid->SetCellValue(i, 7, wxString::Format("%f", signal->getFactor()));
-                    _signalsGrid->SetCellValue(i, 8, wxString::Format("%f", signal->getOffset()));
-                    _signalsGrid->SetCellValue(i, 9, wxString::Format("%f", signal->getMinVal()));
-                    _signalsGrid->SetCellValue(i, 10, wxString::Format("%f", signal->getMaxVal()));
-                    _signalsGrid->SetCellValue(i, 11, signal->getUnit());
-                    _signalsGrid->SetCellValue(i, 12, signal->getReceiver());
+                    _signalsGrid->SetCellValue(i, 9, wxString::Format("%f", signal->getFactor()));
+                    _signalsGrid->SetCellValue(i, 10, wxString::Format("%f", signal->getOffset()));
+                    _signalsGrid->SetCellValue(i, 11, wxString::Format("%f", signal->getMinVal()));
+                    _signalsGrid->SetCellValue(i, 12, wxString::Format("%f", signal->getMaxVal()));
+                    _signalsGrid->SetCellValue(i, 13, signal->getUnit());
+                    _signalsGrid->SetCellValue(i, 14, signal->getReceiver());
                     i++;
                 }
             }
@@ -206,4 +216,13 @@ void TabDatabaseView::OnGridLabelLeftClick(wxGridEvent& event) {
         catch (const std::out_of_range& e) {
         }
     }
+}
+
+void TabDatabaseView::UpdateMessageGrid(std::string busName, int messageId)
+{
+
+}
+void TabDatabaseView::UpdateSignalGrid(std::string busName, int messageId, std::string signalName)
+{
+
 }

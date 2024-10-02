@@ -1,25 +1,26 @@
 #include "CANMessage.hpp"
+#include "Logger.hpp"
 
 namespace cantools_cpp
 {
 
-    const std::map<uint8_t, uint8_t> CANMessage::_dlc2datalength = {
-    { 0,0 },
-    { 1,1 },
-    { 2,2 },
-    { 3,3 },
-    { 4,4 },
-    { 5,5 },
-    { 6,6 },
-    { 7,7 },
-    { 8,8 },
-    { 9,12 },
-    { 10,16 },
-    { 11,20 },
-    { 12,24 },
-    { 13,32 },
-    { 14,48 },
-    { 15,64 },
+    const uint8_t CANMessage::_dlc2datalength[16] = {
+    0 ,
+    1 ,
+    2 ,
+    3 ,
+    4 ,
+    5 ,
+    6 ,
+    7 ,
+    8 ,
+    12 ,
+    16 ,
+    20 ,
+    24 ,
+    32 ,
+    48 ,
+    64
     };
 
     CANMessage::CANMessage(uint32_t id) : _id(id), _cycle(0) {}
@@ -56,6 +57,10 @@ namespace cantools_cpp
         return _dlc;
     }
 
+    int CANMessage::getLength() const {
+        return _dlc2datalength[_dlc];
+    }
+
     void CANMessage::setId(uint32_t id) {
         _id = id;
     }
@@ -70,6 +75,7 @@ namespace cantools_cpp
 
     void CANMessage::setDlc(int dlc) {
         _dlc = dlc;
+        _data = std::shared_ptr<uint8_t[]>(new uint8_t[_dlc2datalength[dlc]]());
     }
 
     std::vector<std::string> CANMessage::getAdditionalTransmitters() const
@@ -95,5 +101,21 @@ namespace cantools_cpp
     std::vector<std::shared_ptr<CANSignal>> CANMessage::getSignals()
     {
         return _signals;
+    }
+
+    std::shared_ptr<uint8_t[]> CANMessage::getData()
+    {
+        return _data;
+    }
+
+    void CANMessage::setData(uint8_t* data, int length)
+    {
+        if (length > sizeof(_data))
+        {
+            Logger::getInstance().log("setData has invalid length", Logger::LOG_INFO);
+        }
+        for (int i = 0; i < length; i++) {
+            _data[i] = data[i];
+        }
     }
 }

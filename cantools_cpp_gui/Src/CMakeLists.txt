@@ -18,7 +18,7 @@ endif()
 include(${wxWidgets_USE_FILE})
 
 # Add the executable with the WIN32 keyword
-add_executable(MyWxApp WIN32 main.cpp "Views/GUIView.cpp" "Controllers/GUIController.cpp" "Views/TabDatabaseView.cpp")
+add_executable(MyWxApp WIN32 main.cpp "Views/GUIView.cpp" "Views/TabDatabaseView.cpp" "Models/BusManager.cpp" "ViewModels/CANViewModel.cpp" "Models/Bus.cpp" "Models/Message.cpp" "Models/Signal.cpp")
 
 # Link wxWidgets libraries
 target_link_libraries(MyWxApp ${wxWidgets_LIBRARIES} cantools_cpp)

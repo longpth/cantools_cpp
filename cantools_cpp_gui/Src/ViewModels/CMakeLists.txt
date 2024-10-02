@@ -6,4 +6,4 @@ file(GLOB_RECURSE CONTROLLERS_SOURCES "*.cpp")
 add_library(GUIControllers ${CONTROLLERS_SOURCES})
 
 # Include directories for the Models target
-target_include_directories(GUIControllers PUBLIC ${PROJECT_SOURCE_DIR}/Controllers)
+target_include_directories(GUIControllers PUBLIC ${PROJECT_SOURCE_DIR}/ViewModels)

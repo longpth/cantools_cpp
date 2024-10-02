@@ -11,15 +11,27 @@
 #include "CANBusManager.hpp"
 #include "CANBus.hpp"
 #include "Parser.hpp"
+#include "CANNode.hpp"
+#include "CANMessage.hpp"
+#include "IView.hpp"
 
-class TabDatabaseView : public wxPanel
+class CANViewModel;
+
+class TabDatabaseView : public IView
 {
 public:
     TabDatabaseView(wxNotebook* parent);
 
     void OnLoadDBC(wxCommandEvent& event);  // Event handler for loading a DBC file
-    void PopulateData(const std::string filePath);                    // Placeholder for populating CAN data
+    void PopulateData(std::vector<std::shared_ptr<cantools_cpp::CANNode>> nodes, std::vector<std::shared_ptr<cantools_cpp::CANMessage>> messages, std::string busName);                    // Placeholder for populating CAN data
     void OnGridLabelLeftClick(wxGridEvent& event);
+
+    virtual void UpdateMessageGrid(std::string busName, int messageId) override;
+    virtual void UpdateSignalGrid(std::string busName, int messageId, std::string signalName) override;
+
+    void setViewModel(std::shared_ptr<CANViewModel> _canViewModel);
+
+    virtual void Update(std::vector<std::shared_ptr<cantools_cpp::CANNode>> nodes, std::vector<std::shared_ptr<cantools_cpp::CANMessage>> messages, std::string busName) override;
 
 private:
     wxTextCtrl* _filePathCtrl;               // Text control to show the loaded file path
@@ -27,8 +39,8 @@ private:
     wxGrid* _messagesGrid;                   // Grid for displaying CAN messages
     wxGrid* _signalsGrid;                    // Grid for displaying CAN signals
     wxListCtrl* _nodesList;                  // List control for nodes
-    std::shared_ptr<cantools_cpp::CANBusManager> _busManager;  // Shared pointer to CANBusManager
-    std::unique_ptr<cantools_cpp::Parser> _parser;              // Unique pointer to Parser
+
+    std::shared_ptr<CANViewModel> _canViewModel;
 
     void SetupLayout();                     // Method to set up the layout
 

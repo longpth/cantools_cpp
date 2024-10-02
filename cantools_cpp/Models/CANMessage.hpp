@@ -20,8 +20,8 @@ namespace cantools_cpp
         int _dlc;
         std::string _transmitter;
         std::vector<std::string> _additionalTransmitters;
-        static const std::map<uint8_t, uint8_t> _dlc2datalength;
-        std::shared_ptr<uint8_t> _data;
+        static const uint8_t _dlc2datalength[];
+        std::shared_ptr<uint8_t[]> _data;
         float _cycle;
 
     public:
@@ -43,6 +43,8 @@ namespace cantools_cpp
 
         int getDlc() const;
 
+        int getLength() const;
+
         std::vector<std::shared_ptr<CANSignal>> getSignals();
 
         float getCycle() const;
@@ -58,6 +60,10 @@ namespace cantools_cpp
         void setDlc(int dlc);
 
         void setCycle(float cycle);
+
+        std::shared_ptr<uint8_t[]> getData();
+
+        virtual void setData(uint8_t* data, int length);
     };
 
 }

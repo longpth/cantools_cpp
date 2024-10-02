@@ -27,7 +27,8 @@ namespace cantools_cpp
         uint8_t _length;
         float _factor;
         float _offset;
-        uint64_t _value;
+        uint64_t _rawValue;
+        double _physicalValue;
         uint8_t _byteOrder;
         float _minVal;
         float _maxVal;
@@ -49,7 +50,8 @@ namespace cantools_cpp
         uint8_t getLength() const;
         float getFactor() const;
         float getOffset() const;
-        uint64_t getValue() const;
+        uint64_t getRawValue() const;
+        double getPhysicalValue() const;
         DbcValueType getValueType() const;
         std::weak_ptr<CANMessage> getParent() const;
         uint8_t CANSignal::getByteOrder() const;
@@ -65,7 +67,8 @@ namespace cantools_cpp
         void setLength(uint8_t length);
         void setFactor(float factor);
         void setOffset(float offset);
-        void setValue(uint64_t value);
+        void setRawValue(uint64_t value);
+        void setPhysicalValue(double value);
         void setValueType(DbcValueType val);
 
         // Display method

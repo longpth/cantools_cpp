@@ -3,6 +3,7 @@
 
 GUIView::GUIView() : wxFrame(nullptr, wxID_ANY, "cantools_cpp gui application", wxDefaultPosition, wxSize(1280, 720)) {
     // Call setup function to initialize the layout
+    _canViewModel = std::make_shared<CANViewModel>();
     SetupLayout();
 }
 
@@ -15,6 +16,7 @@ void GUIView::SetupLayout() {
 
     // Create three tabs
     TabDatabaseView* tab1 = new TabDatabaseView(notebook);
+    tab1->setViewModel(_canViewModel);
     wxPanel* tab2 = new wxPanel(notebook, wxID_ANY);
     wxPanel* tab3 = new wxPanel(notebook, wxID_ANY);
 
