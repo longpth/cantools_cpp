@@ -4,7 +4,7 @@
 #include "IViewModelObserver.hpp"
 #include "IBusManagerObserver.hpp"
 
-class BusManager : public cantools_cpp::CANBusManager, IBusManagerObserver
+class BusManager : public cantools_cpp::CANBusManager, cantools_cpp::IBusManagerObserver
 {
 public:
 	BusManager();

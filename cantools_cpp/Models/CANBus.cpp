@@ -105,4 +105,40 @@ namespace cantools_cpp
             }
         }
     }
+
+    void CANBus::updateMessage(uint32_t messageId)
+    {
+        notifyObserverAboutMessage(messageId);
+    }
+    void CANBus::updateSignal(uint32_t messageId, std::string signalName)
+    {
+        notifyObserverAboutSignal(messageId, signalName);
+    }
+
+    void CANBus::addObserver(IBusManagerObserver* observer)
+    {
+        _observers.push_back(observer);
+    }
+
+    void CANBus::removeObserver(IBusManagerObserver* observer)
+    {
+        _observers.erase(std::remove(_observers.begin(), _observers.end(), observer), _observers.end());
+    }
+
+    void CANBus::notifyObserverAboutMessage(uint32_t messageId)
+    {
+        for (auto observer : _observers)
+        {
+            observer->updateMessage(getName(), messageId);
+        }
+    }
+
+    void CANBus::notifyObserverAboutSignal(uint32_t messageId, std::string signalName)
+    {
+        for (auto observer : _observers)
+        {
+            observer->updateSignal(getName(), messageId, signalName);
+        }
+    }
+
 }

@@ -18,9 +18,9 @@ namespace cantools_cpp
         CANBusManager();
         ~CANBusManager();
 
-        void createBus(const std::string& busName);
-        std::shared_ptr<CANBus> getBus(const std::string& busName);
-        std::unordered_map<std::string, std::shared_ptr<CANBus>> getBuses()
+        virtual void createBus(const std::string& busName);
+        virtual std::shared_ptr<CANBus> getBus(const std::string& busName);
+        virtual std::unordered_map<std::string, std::shared_ptr<CANBus>> getBuses()
         {
             return _busMap;
         }

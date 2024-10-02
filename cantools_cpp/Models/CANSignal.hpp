@@ -1,6 +1,8 @@
 #pragma once
 #include <string>
 #include <memory>
+#include <vector>
+#include "IBusObserver.hpp"
 
 namespace cantools_cpp
 {
@@ -21,26 +23,10 @@ namespace cantools_cpp
     };
 
     class CANSignal {
-    private:
-        std::string _name;
-        uint8_t _startBit;
-        uint8_t _length;
-        float _factor;
-        float _offset;
-        uint64_t _rawValue;
-        double _physicalValue;
-        uint8_t _byteOrder;
-        float _minVal;
-        float _maxVal;
-        std::string _unit;
-        std::string _receiver;
-        std::string _multiplexer;
-
-        std::weak_ptr<CANMessage> _parent;
-
-        DbcValueType _valueType;
 
     public:
+        void addObserver(IBusObserver* observer);
+        void removeObserver(IBusObserver* observer);
         // Constructor
         CANSignal(const std::string& name, uint8_t startBit, uint8_t length, float factor, float offset, float minVal, float maxVal, std::string unit, uint8_t byteOrder, uint8_t valType, std::string receiver, std::string multiplexer);
 
@@ -75,5 +61,30 @@ namespace cantools_cpp
         void display() const;
 
         void setParent(std::weak_ptr<CANMessage> parent);
+
+        void decode(const uint8_t* data);
+
+    private:
+        void notifyObserver();
+
+        std::vector<IBusObserver* > _observers;
+
+        std::string _name;
+        uint8_t _startBit;
+        uint8_t _length;
+        float _factor;
+        float _offset;
+        uint64_t _rawValue;
+        double _physicalValue;
+        uint8_t _byteOrder;
+        float _minVal;
+        float _maxVal;
+        std::string _unit;
+        std::string _receiver;
+        std::string _multiplexer;
+
+        std::weak_ptr<CANMessage> _parent;
+
+        DbcValueType _valueType;
     };
 }

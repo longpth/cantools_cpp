@@ -5,6 +5,7 @@
 #include <map>
 #include "CANSignal.hpp"
 #include "SignalGroup.hpp"
+#include "IBusObserver.hpp"
 
 #include <iostream>
 
@@ -12,18 +13,6 @@ namespace cantools_cpp
 {
 
     class CANMessage {
-    private:
-        uint32_t _id;
-        std::vector<std::shared_ptr<CANSignal>> _signals;
-        std::vector<std::shared_ptr<SignalGroup>> _signalGroups;
-        std::string _name;
-        int _dlc;
-        std::string _transmitter;
-        std::vector<std::string> _additionalTransmitters;
-        static const uint8_t _dlc2datalength[];
-        std::shared_ptr<uint8_t[]> _data;
-        float _cycle;
-
     public:
         CANMessage(uint32_t id);
 
@@ -63,7 +52,26 @@ namespace cantools_cpp
 
         std::shared_ptr<uint8_t[]> getData();
 
-        virtual void setData(uint8_t* data, int length);
+        void setData(uint8_t* data, int length);
+
+        void addObserver(IBusObserver* observer);
+        void removeObserver(IBusObserver* observer);
+
+    private:
+        void notifyObserver();
+
+        uint32_t _id;
+        std::vector<std::shared_ptr<CANSignal>> _signals;
+        std::vector<std::shared_ptr<SignalGroup>> _signalGroups;
+        std::string _name;
+        int _dlc;
+        std::string _transmitter;
+        std::vector<std::string> _additionalTransmitters;
+        static const uint8_t _dlc2datalength[];
+        std::shared_ptr<uint8_t[]> _data;
+        float _cycle;
+
+        std::vector<IBusObserver*> _observers;
     };
 
 }

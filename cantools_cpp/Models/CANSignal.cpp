@@ -1,8 +1,28 @@
 #include "CANSignal.hpp"
+#include "CANMessage.hpp"
 #include "Logger.hpp"
 
 namespace cantools_cpp
 {
+    uint64_t extractBits(const uint8_t* data, uint8_t startBit, uint8_t length, ByteOrder byteOrder) {
+        uint64_t rawValue = 0;
+        if (byteOrder == ByteOrder_MSB) {
+            // Extract bits using MSB-first bit order
+            for (uint8_t i = 0; i < length; ++i) {
+                uint8_t bitIndex = startBit + i;
+                rawValue |= ((data[bitIndex / 8] >> (7 - (bitIndex % 8))) & 0x1) << (length - i - 1);
+            }
+        }
+        else if (byteOrder == ByteOrder_LSB) {
+            // Extract bits using LSB-first bit order
+            for (uint8_t i = 0; i < length; ++i) {
+                uint8_t bitIndex = startBit + i;
+                rawValue |= ((data[bitIndex / 8] >> (bitIndex % 8)) & 0x1) << i;
+            }
+        }
+        return rawValue;
+    }
+
     // Constructor
     CANSignal::CANSignal(const std::string& name, uint8_t startBit, uint8_t length, float factor, float offset, float minVal, float maxVal, std::string unit, uint8_t byteOrder, uint8_t valType, std::string receiver, std::string multiplexer)
         : _name(name), _startBit(startBit), _length(length), _factor(factor), _offset(offset), _minVal(minVal), _maxVal(maxVal), _unit(unit), _byteOrder(byteOrder), _receiver(receiver), _rawValue(0), _valueType(DbcValueType(valType)), _multiplexer(multiplexer)
@@ -57,4 +77,41 @@ namespace cantools_cpp
     std::weak_ptr<CANMessage> CANSignal::getParent() const {
         return _parent;
     }
+
+    void CANSignal::decode(const uint8_t* data) {
+        // Extract raw value from the message data
+        _rawValue = extractBits(data, _startBit, _length, static_cast<ByteOrder>(_byteOrder));
+
+        // If the value is signed, handle sign extension for the raw value
+        if (_valueType == DbcValueType::Signed) {
+            int64_t signedValue = _rawValue;
+            uint64_t signBitMask = 1ULL << (_length - 1);
+            if (_rawValue & signBitMask) {
+                signedValue = _rawValue | (~((1ULL << _length) - 1));  // Sign extend
+            }
+            _rawValue = signedValue;
+        }
+
+        // Calculate the physical value using scaling and offset
+        _physicalValue = _rawValue * _factor + _offset;
+    }
+
+    void CANSignal::addObserver(IBusObserver* observer)
+    {
+        _observers.push_back(observer);
+    }
+
+    void CANSignal::removeObserver(IBusObserver* observer)
+    {
+        _observers.erase(std::remove(_observers.begin(), _observers.end(), observer), _observers.end());
+    }
+
+    void CANSignal::notifyObserver()
+    {
+        for (auto observer : _observers)
+        {
+            observer->updateSignal(getParent().lock()->getId(), getName());
+        }
+    }
+
 }

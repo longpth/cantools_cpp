@@ -117,5 +117,29 @@ namespace cantools_cpp
         for (int i = 0; i < length; i++) {
             _data[i] = data[i];
         }
+
+        for (auto signal : _signals)
+        {
+            signal->decode(_data.get());
+        }
     }
+
+    void CANMessage::addObserver(IBusObserver* observer)
+    {
+        _observers.push_back(observer);
+    }
+
+    void CANMessage::removeObserver(IBusObserver* observer)
+    {
+        _observers.erase(std::remove(_observers.begin(), _observers.end(), observer), _observers.end());
+    }
+
+    void CANMessage::notifyObserver()
+    {
+        for (auto observer : _observers)
+        {
+            observer->updateMessage(getId());
+        }
+    }
+
 }

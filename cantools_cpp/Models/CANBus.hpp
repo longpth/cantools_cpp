@@ -5,17 +5,13 @@
 #include <iostream>
 #include "CANNode.hpp"
 #include "CANMessage.hpp"
+#include "IBusObserver.hpp"
+#include "IBusManagerObserver.hpp"
 
 namespace cantools_cpp
 {
-    class CANBus {
-    private:
-        std::string _busName;
-        std::vector<std::shared_ptr<CANNode>> _nodes; // Connected nodes
-        std::vector<std::shared_ptr<CANMessage>> _allMessages;
-        std::map<uint32_t, std::vector<std::shared_ptr<CANSignal>>> _allSignals;
-
-        std::shared_ptr<CANMessage> _currentMessage;
+    class CANBus: public IBusObserver
+    {
 
     public:
         CANBus(const std::string& name) : _busName(name) {}
@@ -43,5 +39,23 @@ namespace cantools_cpp
         std::vector<std::shared_ptr<CANMessage>> getAllMessages();
 
         void build();
+
+        virtual void updateMessage(uint32_t messageId) override;
+        virtual void updateSignal(uint32_t messageId, std::string signalName) override;
+
+        void addObserver(IBusManagerObserver* observer);
+        void removeObserver(IBusManagerObserver* observer);
+
+    private:
+        void notifyObserverAboutMessage(uint32_t messageId);
+        void notifyObserverAboutSignal(uint32_t messageId, std::string signalName);
+
+        std::vector<IBusManagerObserver*> _observers;
+        std::string _busName;
+        std::vector<std::shared_ptr<CANNode>> _nodes; // Connected nodes
+        std::vector<std::shared_ptr<CANMessage>> _allMessages;
+        std::map<uint32_t, std::vector<std::shared_ptr<CANSignal>>> _allSignals;
+
+        std::shared_ptr<CANMessage> _currentMessage;
     };
 }
