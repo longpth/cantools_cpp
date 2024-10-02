@@ -25,9 +25,10 @@ public:
     void OnLoadDBC(wxCommandEvent& event);  // Event handler for loading a DBC file
     void PopulateData(std::vector<std::shared_ptr<cantools_cpp::CANNode>> nodes, std::vector<std::shared_ptr<cantools_cpp::CANMessage>> messages, std::string busName);                    // Placeholder for populating CAN data
     void OnGridLabelLeftClick(wxGridEvent& event);
+    void OnMessageGridCellChange(wxGridEvent& event);
 
-    virtual void UpdateMessageGrid(std::string busName, int messageId) override;
-    virtual void UpdateSignalGrid(std::string busName, int messageId, std::string signalName) override;
+    virtual void UpdateMessageGrid(std::string busName, uint32_t messageId) override;
+    virtual void UpdateSignalGrid(std::string busName, uint32_t messageId, std::string signalName) override;
 
     void setViewModel(std::shared_ptr<CANViewModel> _canViewModel);
 
@@ -41,6 +42,8 @@ private:
     wxListCtrl* _nodesList;                  // List control for nodes
 
     std::shared_ptr<CANViewModel> _canViewModel;
+
+    std::string _currentBusName;
 
     void SetupLayout();                     // Method to set up the layout
 

@@ -57,6 +57,8 @@ namespace cantools_cpp
         void addObserver(IBusObserver* observer);
         void removeObserver(IBusObserver* observer);
 
+        std::weak_ptr<CANSignal> getSignal(std::string name);
+
     private:
         void notifyObserver();
 

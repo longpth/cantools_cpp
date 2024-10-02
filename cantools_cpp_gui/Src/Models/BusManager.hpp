@@ -20,6 +20,8 @@ public:
     virtual void updateMessage(std::string busName, uint32_t messageId) override;
     virtual void updateSignal(std::string busName, uint32_t messageId, std::string signalName) override;
 
+    virtual bool createBus(const std::string& busName) override;
+
 private:
     void notifyObserversAboutMessage(std::string busName, uint32_t messageId);
     void notifyObserversAboutSignal(std::string busName, uint32_t messageId, std::string signalName);

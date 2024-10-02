@@ -12,14 +12,17 @@ namespace cantools_cpp
 
     CANBusManager::~CANBusManager() {}
 
-    void CANBusManager::createBus(const std::string& busName) {
+    bool CANBusManager::createBus(const std::string& busName) {
+        bool ret = true;
         if (_busMap.find(busName) == _busMap.end()) {
             _busMap[busName] = std::make_shared<CANBus>(busName);
             Logger::getInstance().log("CAN Bus " + busName + " created.", Logger::LOG_INFO);
         }
         else {
             Logger::getInstance().log("CAN Bus " + busName + " already exists.", Logger::LOG_INFO);
+            ret = false;
         }
+        return ret;
     }
 
     std::shared_ptr<CANBus> CANBusManager::getBus(const std::string& busName) {

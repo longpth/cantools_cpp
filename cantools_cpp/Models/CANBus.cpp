@@ -54,6 +54,7 @@ namespace cantools_cpp
             if (_allSignals[_currentMessage->getId()].size() == 0 || it == _allSignals[_currentMessage->getId()].end())
             {
                 _allSignals[_currentMessage->getId()].push_back(signal);
+                signal->addObserver(this);
             }
         }
     }

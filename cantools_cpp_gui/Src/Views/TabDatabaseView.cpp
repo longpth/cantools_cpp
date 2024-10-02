@@ -5,9 +5,28 @@
 #include "Util.hpp"
 #include "CANViewModel.hpp"
 
+
 enum {
     ID_LoadDBC = 1001,  // Event ID for the Load DBC button
     ID_MessageGrid = 1002 // Event ID for the Message Grid
+};
+
+enum {
+    COLUMN_SIGNAL_GRID_ID = 0,            // "ID"
+    COLUMN_SIGNAL_GRID_NAME,              // "Name"
+    COLUMN_SIGNAL_GRID_STARTBIT,          // "StartBit"
+    COLUMN_SIGNAL_GRID_LENGTH,            // "Length"
+    COLUMN_SIGNAL_GRID_BYTEORDER,         // "ByteOrder"
+    COLUMN_SIGNAL_GRID_ISSIGNED,          // "IsSigned"
+    COLUMN_SIGNAL_GRID_INITIALVAL,        // "InitialValue"
+    COLUMN_SIGNAL_GRID_RAWVAL,            // "Raw Value"
+    COLUMN_SIGNAL_GRID_PHYSICALVAL,       // "Physical value"
+    COLUMN_SIGNAL_GRID_FACTOR,            // "Factor"
+    COLUMN_SIGNAL_GRID_OFFSET,            // "Offset"
+    COLUMN_SIGNAL_GRID_MINIMUM,           // "Minimum"
+    COLUMN_SIGNAL_GRID_MAXIMUM,           // "Maximum"
+    COLUMN_SIGNAL_GRID_UNIT,              // "Unit"
+    COLUMN_SIGNAL_GRID_RECEIVER           // "Receiver"
 };
 
 // Event table to handle the button click and grid cell click events
@@ -84,6 +103,12 @@ void TabDatabaseView::SetupLayout()
 
     // Set the sizer for this panel
     this->SetSizerAndFit(vBox);
+
+    // Enable grid editing
+    _messagesGrid->EnableEditing(true);
+
+    // Bind the cell change event
+    _messagesGrid->Bind(wxEVT_GRID_CELL_CHANGED, &TabDatabaseView::OnMessageGridCellChange, this);
 }
 
 void TabDatabaseView::OnLoadDBC(wxCommandEvent& event)
@@ -127,17 +152,17 @@ void TabDatabaseView::PopulateData(std::vector<std::shared_ptr<cantools_cpp::CAN
     // Populate the grid with CAN message data
     for (size_t i = 0; i < messages.size(); ++i) {
         const auto& message = messages[i];
-        _messagesGrid->SetCellValue(i, 0, wxString::Format("0x%X", message->getId())); // ID
+        _messagesGrid->SetCellValue(i, 0, wxString::Format("0x%X", message->getId())); _messagesGrid->SetReadOnly(i, 0); // ID
         _messagesGrid->SetCellValue(i, 1, message->getName()); // Name
         _messagesGrid->AutoSizeColumn(1);  // Resize the specific column (index 1)
         _messagesGrid->SetCellValue(i, 2, wxString::Format("%d", message->getDlc())); // DLC
         _messagesGrid->SetCellValue(i, 3, message->getTransmitter()); // Transmitter
         _messagesGrid->SetCellValue(i, 4, wxString::Format("%d", static_cast<int>(message->getCycle()))); // CycleTime
-        _messagesGrid->SetCellValue(i, 5, busName); // Bus 
+        _messagesGrid->SetCellValue(i, 5, busName); _messagesGrid->SetReadOnly(i, 5); // Bus 
 
         std::shared_ptr<uint8_t[]> data = message->getData();
 
-        std::string dataStr = cantools_cpp::Util::getInstance().ConvertToHexString(data, message->getLength());
+        std::string dataStr = cantools_cpp::Util::getInstance().convertToHexString(data, message->getLength());
         _messagesGrid->SetCellValue(i, 6, dataStr); // Bus
         // Automatically resize the column to fit the data
         _messagesGrid->AutoSizeColumn(6);  // Resize the specific column (index 6)
@@ -157,6 +182,44 @@ void TabDatabaseView::PopulateData(std::vector<std::shared_ptr<cantools_cpp::CAN
 
 }
 
+void TabDatabaseView::OnMessageGridCellChange(wxGridEvent& event) {
+    int row = event.GetRow();
+    int col = event.GetCol();
+
+    // Get the value from the grid at row 'row' and column 5
+    wxString valueAtColumn5 = _messagesGrid->GetCellValue(row, 5);
+
+    std::string busName = valueAtColumn5.ToStdString();
+
+    auto message = _canViewModel->getBusMan()->getBus(busName)->getMessageById(std::stoul(_messagesGrid->GetCellValue(row, 0).ToStdString(), nullptr, 16));
+
+    wxString newValue = _messagesGrid->GetCellValue(row, col);
+    std::vector<uint8_t> data;
+
+    switch (col) {
+        case 1: // Message Name
+            message->setName(newValue.ToStdString());
+            break;
+        case 2: // DLC (Data Length Code)
+            message->setDlc(std::stoi(newValue.ToStdString()));
+            break;
+        case 3: // Transmitter
+            message->setTransmitter(newValue.ToStdString());
+            break;
+        case 4: // Cycle Time
+            message->setCycle(std::stoi(newValue.ToStdString()));
+            break;
+        case 6: // Data (Hex string)
+            data = cantools_cpp::Util::getInstance().convertFromHexString(newValue.ToStdString());
+            message->setData(data.data(), data.size());
+            break;
+        default:
+            break;
+    }
+
+    event.Skip(); // Allow the event to propagate further if needed
+}
+
 void TabDatabaseView::OnGridLabelLeftClick(wxGridEvent& event) {
     int row = event.GetRow(); // Get the clicked row index
     if (row >= 0) {
@@ -169,6 +232,8 @@ void TabDatabaseView::OnGridLabelLeftClick(wxGridEvent& event) {
 
         // Access the bus using the extracted bus name
         auto bus = _canViewModel->getBusMan()->getBus(busName);
+
+        _currentBusName = busName;
 
         // Retrieve all messages
         auto messages = bus->getAllMessages();
@@ -193,20 +258,22 @@ void TabDatabaseView::OnGridLabelLeftClick(wxGridEvent& event) {
                 int i = 0;
                 for (auto signal : (*it)->getSignals())
                 {
-                    _signalsGrid->SetCellValue(i, 0, wxString::Format("0x%X", signal->getParent().lock()->getId()));
-                    _signalsGrid->SetCellValue(i, 1, signal->getName());
-                    _signalsGrid->AutoSizeColumn(1);  // Resize the specific column (index 1)
-                    _signalsGrid->SetCellValue(i, 2, wxString::Format("%d", signal->getStartBit()));
-                    _signalsGrid->SetCellValue(i, 3, wxString::Format("%d", signal->getLength()));
-                    _signalsGrid->SetCellValue(i, 4, wxString::Format("%d", signal->getByteOrder()));
-                    _signalsGrid->SetCellValue(i, 5, wxString::Format("%d", signal->getValueType()));
-                    //_signalsGrid->SetCellValue(i, 6, "InitialValue");
-                    _signalsGrid->SetCellValue(i, 9, wxString::Format("%f", signal->getFactor()));
-                    _signalsGrid->SetCellValue(i, 10, wxString::Format("%f", signal->getOffset()));
-                    _signalsGrid->SetCellValue(i, 11, wxString::Format("%f", signal->getMinVal()));
-                    _signalsGrid->SetCellValue(i, 12, wxString::Format("%f", signal->getMaxVal()));
-                    _signalsGrid->SetCellValue(i, 13, signal->getUnit());
-                    _signalsGrid->SetCellValue(i, 14, signal->getReceiver());
+                    _signalsGrid->SetCellValue(i, COLUMN_SIGNAL_GRID_ID, wxString::Format("0x%X", signal->getParent().lock()->getId())); // ID
+                    _signalsGrid->SetCellValue(i, COLUMN_SIGNAL_GRID_NAME, signal->getName()); // Name
+                    _signalsGrid->AutoSizeColumn(COLUMN_SIGNAL_GRID_NAME);  // Resize the specific column (index 1)
+                    _signalsGrid->SetCellValue(i, COLUMN_SIGNAL_GRID_STARTBIT, wxString::Format("%d", signal->getStartBit())); // StartBit
+                    _signalsGrid->SetCellValue(i, COLUMN_SIGNAL_GRID_LENGTH, wxString::Format("%d", signal->getLength())); // Length
+                    _signalsGrid->SetCellValue(i, COLUMN_SIGNAL_GRID_BYTEORDER, wxString::Format("%d", signal->getByteOrder())); // ByteOrder
+                    _signalsGrid->SetCellValue(i, COLUMN_SIGNAL_GRID_ISSIGNED, wxString::Format("%d", signal->getValueType())); // IsSigned
+                    //_signalsGrid->SetCellValue(i, COLUMN_SIGNAL_GRID_INITIALVAL, wxString::Format("%f", signal->getInitialValue())); // InitialValue
+                    _signalsGrid->SetCellValue(i, COLUMN_SIGNAL_GRID_RAWVAL, wxString::Format("%llu", static_cast<unsigned long long>(signal->getRawValue()))); // Raw Value
+                    _signalsGrid->SetCellValue(i, COLUMN_SIGNAL_GRID_PHYSICALVAL, wxString::Format("%f", signal->getPhysicalValue())); // Physical Value
+                    _signalsGrid->SetCellValue(i, COLUMN_SIGNAL_GRID_FACTOR, wxString::Format("%f", signal->getFactor())); // Factor
+                    _signalsGrid->SetCellValue(i, COLUMN_SIGNAL_GRID_OFFSET, wxString::Format("%f", signal->getOffset())); // Offset
+                    _signalsGrid->SetCellValue(i, COLUMN_SIGNAL_GRID_MINIMUM, wxString::Format("%f", signal->getMinVal())); // Minimum
+                    _signalsGrid->SetCellValue(i, COLUMN_SIGNAL_GRID_MAXIMUM, wxString::Format("%f", signal->getMaxVal())); // Maximum
+                    _signalsGrid->SetCellValue(i, COLUMN_SIGNAL_GRID_UNIT, signal->getUnit()); // Unit
+                    _signalsGrid->SetCellValue(i, COLUMN_SIGNAL_GRID_RECEIVER, signal->getReceiver()); // Receiver
                     i++;
                 }
             }
@@ -218,11 +285,49 @@ void TabDatabaseView::OnGridLabelLeftClick(wxGridEvent& event) {
     }
 }
 
-void TabDatabaseView::UpdateMessageGrid(std::string busName, int messageId)
+void TabDatabaseView::UpdateMessageGrid(std::string busName, uint32_t messageId)
 {
 
 }
-void TabDatabaseView::UpdateSignalGrid(std::string busName, int messageId, std::string signalName)
-{
 
+void TabDatabaseView::UpdateSignalGrid(std::string busName, uint32_t messageId, std::string signalName)
+{
+    if (_signalsGrid->GetNumberRows() > 0)
+    {
+        std::string cellValueStr = _signalsGrid->GetCellValue(0, 0); // Get the cell value as a string
+        uint32_t cellValue;
+
+        try {
+            cellValue = static_cast<uint32_t>(std::stoul(cellValueStr, nullptr, 0)); // Convert string to uint32_t
+        }
+        catch (const std::invalid_argument& e) {
+            // Handle the case where the conversion is invalid (e.g., non-numeric string)
+            //wxLogError("Invalid number in grid cell: %s", cellValueStr);
+            cellValue = 0; // Set a default value or handle the error appropriately
+        }
+        catch (const std::out_of_range& e) {
+            // Handle the case where the value is out of range for uint32_t
+            //wxLogError("Value out of range for uint32_t in grid cell: %s", cellValueStr);
+            cellValue = 0; // Set a default value or handle the error appropriately
+        }
+
+        if (cellValue == messageId)
+        {
+            int numRows = _signalsGrid->GetNumberRows();
+            for (int row = 0; row < numRows; ++row) {
+                std::string cellValueStr = _signalsGrid->GetCellValue(row, 1); // Get the value in column 1 for each row
+
+                // Check if the cell value matches the signalName
+                if (cellValueStr == signalName) {
+                    if (_currentBusName != "")
+                    {
+                        auto signal = _canViewModel->getBusMan()->getBus(_currentBusName)->getMessageById(messageId)->getSignal(signalName);
+                        _signalsGrid->SetCellValue(row, COLUMN_SIGNAL_GRID_RAWVAL, wxString::Format("%llu", signal.lock()->getRawValue())); // Raw Value
+                        _signalsGrid->SetCellValue(row, COLUMN_SIGNAL_GRID_PHYSICALVAL, wxString::Format("%f", signal.lock()->getPhysicalValue())); // Physical Value
+                    }
+                }
+            }
+        }
+
+    }
 }

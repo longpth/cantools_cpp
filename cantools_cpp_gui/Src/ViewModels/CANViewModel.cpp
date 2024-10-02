@@ -7,6 +7,7 @@
 CANViewModel::CANViewModel():_busManager(std::make_shared<BusManager>()),
 _parser(std::make_unique<cantools_cpp::Parser>(_busManager))
 {
+    _busManager->addObserver(this);
 }
 
 CANViewModel::~CANViewModel() {

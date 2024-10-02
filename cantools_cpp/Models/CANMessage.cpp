@@ -108,6 +108,23 @@ namespace cantools_cpp
         return _data;
     }
 
+    std::weak_ptr<CANSignal> CANMessage::getSignal(std::string name)
+    {
+        std::weak_ptr<CANSignal> ptr;
+
+        auto it = std::find_if(_signals.begin(), _signals.end(), [name](std::weak_ptr<CANSignal> signal) {
+            return signal.lock()->getName() == name;
+            }
+        );
+
+        if (it != _signals.end())
+        {
+            ptr = *it;
+        }
+        
+        return ptr;
+    }
+
     void CANMessage::setData(uint8_t* data, int length)
     {
         if (length > sizeof(_data))

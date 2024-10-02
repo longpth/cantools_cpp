@@ -39,7 +39,7 @@ namespace cantools_cpp
 
         std::smatch _match;
         if (std::regex_search(_trimmed, _match, ExtraTransmitterRegex) && _match.size() > 2) {
-            unsigned int messageId = std::stoul(_match.str(1));
+            uint32_t messageId = std::stoul(_match.str(1));
             std::string transmitters = _match.str(2);
 
             // Assuming processTransmitters is a method in CANBusManager to handle the list of transmitters for a message

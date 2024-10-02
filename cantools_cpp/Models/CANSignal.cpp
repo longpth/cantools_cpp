@@ -1,33 +1,15 @@
 #include "CANSignal.hpp"
 #include "CANMessage.hpp"
 #include "Logger.hpp"
+#include "Util.hpp"
 
 namespace cantools_cpp
 {
-    uint64_t extractBits(const uint8_t* data, uint8_t startBit, uint8_t length, ByteOrder byteOrder) {
-        uint64_t rawValue = 0;
-        if (byteOrder == ByteOrder_MSB) {
-            // Extract bits using MSB-first bit order
-            for (uint8_t i = 0; i < length; ++i) {
-                uint8_t bitIndex = startBit + i;
-                rawValue |= ((data[bitIndex / 8] >> (7 - (bitIndex % 8))) & 0x1) << (length - i - 1);
-            }
-        }
-        else if (byteOrder == ByteOrder_LSB) {
-            // Extract bits using LSB-first bit order
-            for (uint8_t i = 0; i < length; ++i) {
-                uint8_t bitIndex = startBit + i;
-                rawValue |= ((data[bitIndex / 8] >> (bitIndex % 8)) & 0x1) << i;
-            }
-        }
-        return rawValue;
-    }
-
     // Constructor
     CANSignal::CANSignal(const std::string& name, uint8_t startBit, uint8_t length, float factor, float offset, float minVal, float maxVal, std::string unit, uint8_t byteOrder, uint8_t valType, std::string receiver, std::string multiplexer)
         : _name(name), _startBit(startBit), _length(length), _factor(factor), _offset(offset), _minVal(minVal), _maxVal(maxVal), _unit(unit), _byteOrder(byteOrder), _receiver(receiver), _rawValue(0), _valueType(DbcValueType(valType)), _multiplexer(multiplexer)
     {
-
+        _physicalValue = static_cast<double>(_rawValue) * _factor + _offset;
     }
 
     // Getters
@@ -78,22 +60,40 @@ namespace cantools_cpp
         return _parent;
     }
 
-    void CANSignal::decode(const uint8_t* data) {
-        // Extract raw value from the message data
-        _rawValue = extractBits(data, _startBit, _length, static_cast<ByteOrder>(_byteOrder));
+    void CANSignal::decode(const uint8_t* data) 
+    {
+        auto startBit = _startBit;
 
-        // If the value is signed, handle sign extension for the raw value
-        if (_valueType == DbcValueType::Signed) {
-            int64_t signedValue = _rawValue;
-            uint64_t signBitMask = 1ULL << (_length - 1);
-            if (_rawValue & signBitMask) {
-                signedValue = _rawValue | (~((1ULL << _length) - 1));  // Sign extend
-            }
-            _rawValue = signedValue;
+        // Get the length from the parent message
+        auto parent = _parent.lock(); // Use lock to get a shared_ptr from weak_ptr
+        if (!parent) {
+            throw std::runtime_error("Parent message not available");
         }
 
-        // Calculate the physical value using scaling and offset
-        _physicalValue = _rawValue * _factor + _offset;
+        int length = parent->getLength();
+
+        // Create a vector from the data with the length
+        std::vector<uint8_t> tempArray(data, data + length);
+
+        if (_byteOrder != ByteOrder_LSB)
+        {
+            // Reverse the array
+            std::reverse(tempArray.begin(), tempArray.end());
+
+            startBit = Util::getInstance().getStartBitLE(*this, length);
+        }
+
+        uint64_t rawValue = Util::getInstance().extractBits(tempArray, startBit, _length);
+
+        if (_rawValue != rawValue)
+        {
+            _rawValue = rawValue;
+
+            // Calculate the physical value using scaling and offset
+            _physicalValue = _rawValue * _factor + _offset;
+
+            notifyObserver();
+        }
     }
 
     void CANSignal::addObserver(IBusObserver* observer)
