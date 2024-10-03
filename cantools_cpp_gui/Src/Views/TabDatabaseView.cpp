@@ -12,7 +12,7 @@ enum {
 };
 
 enum {
-    COLUMN_SIGNAL_GRID_ID = 0,            // "ID"
+    COLUMN_SIGNAL_GRID_MSG_ID = 0,            // "ID"
     COLUMN_SIGNAL_GRID_NAME,              // "Name"
     COLUMN_SIGNAL_GRID_STARTBIT,          // "StartBit"
     COLUMN_SIGNAL_GRID_LENGTH,            // "Length"
@@ -176,9 +176,9 @@ void TabDatabaseView::PopulateData(std::vector<std::shared_ptr<cantools_cpp::CAN
         std::shared_ptr<uint8_t[]> data = message->getData();
 
         std::string dataStr = cantools_cpp::Util::getInstance().convertToHexString(data, message->getLength());
-        _messagesGrid->SetCellValue(i, 6, dataStr); // Bus
+        _messagesGrid->SetCellValue(i, COLUMN_MESSAGE_GRID_DATA, dataStr); // Data
         // Automatically resize the column to fit the data
-        _messagesGrid->AutoSizeColumn(6);  // Resize the specific column (index 6)
+        _messagesGrid->AutoSizeColumn(COLUMN_MESSAGE_GRID_DATA);  // Resize the specific column (index 6)
     }
 
     // Clear the previous data in the nodes list
@@ -196,19 +196,44 @@ void TabDatabaseView::PopulateData(std::vector<std::shared_ptr<cantools_cpp::CAN
 }
 
 void TabDatabaseView::OnSignalGridCellChange(wxGridEvent& event) {
+    int row = event.GetRow();
+    int col = event.GetCol();
 
+    // Access the bus using the extracted bus name
+    auto bus = _canViewModel->getBusMan()->getBus(_currentBusName);
+    
+    // Get the value from the grid at row 'row' and column COLUMN_MESSAGE_GRID_ID
+    wxString wxMsgId = _signalsGrid->GetCellValue(row, COLUMN_SIGNAL_GRID_MSG_ID);
+    wxString wxSignalName = _signalsGrid->GetCellValue(row, COLUMN_SIGNAL_GRID_NAME);
+
+    std::string msgId = wxMsgId.ToStdString();
+
+    auto signal = bus->getMessageById(std::stoul(msgId, nullptr, 16))->getSignal(wxSignalName.ToStdString());
+
+    wxString newValue = _signalsGrid->GetCellValue(row, col);
+
+    switch (col) {
+    case COLUMN_SIGNAL_GRID_RAWVAL: // Signal raw value
+        signal.lock()->setRawValue(std::stoull(newValue.ToStdString()));
+        break;
+    case COLUMN_SIGNAL_GRID_PHYSICALVAL: // Signal physical value
+        signal.lock()->setPhysicalValue(std::stod(newValue.ToStdString()));
+        break;
+    default:
+        break;
+    }
 }
 
 void TabDatabaseView::OnMessageGridCellChange(wxGridEvent& event) {
     int row = event.GetRow();
     int col = event.GetCol();
 
-    // Get the value from the grid at row 'row' and column 5
-    wxString valueAtColumn5 = _messagesGrid->GetCellValue(row, 5);
+    // Get the value from the grid at row 'row' and column COLUMN_MESSAGE_GRID_BUS
+    wxString valueAtColumn5 = _messagesGrid->GetCellValue(row, COLUMN_MESSAGE_GRID_BUS);
 
     std::string busName = valueAtColumn5.ToStdString();
 
-    auto message = _canViewModel->getBusMan()->getBus(busName)->getMessageById(std::stoul(_messagesGrid->GetCellValue(row, 0).ToStdString(), nullptr, 16));
+    auto message = _canViewModel->getBusMan()->getBus(busName)->getMessageById(std::stoul(_messagesGrid->GetCellValue(row, COLUMN_MESSAGE_GRID_ID).ToStdString(), nullptr, 16));
 
     wxString newValue = _messagesGrid->GetCellValue(row, col);
     std::vector<uint8_t> data;
@@ -241,8 +266,8 @@ void TabDatabaseView::OnGridLabelLeftClick(wxGridEvent& event) {
     int row = event.GetRow(); // Get the clicked row index
     if (row >= 0) {
         // Retrieve the message ID from the clicked row
-        std::string messageId = _messagesGrid->GetCellValue(row, 0).ToStdString();
-        std::string busName   = _messagesGrid->GetCellValue(row, 5).ToStdString();
+        std::string messageId = _messagesGrid->GetCellValue(row, COLUMN_MESSAGE_GRID_ID).ToStdString();
+        std::string busName   = _messagesGrid->GetCellValue(row, COLUMN_MESSAGE_GRID_BUS).ToStdString();
 
         // Log the selected message ID or handle it as needed
         cantools_cpp::Logger::getInstance().log("Selected message ID: " + messageId);
@@ -275,7 +300,7 @@ void TabDatabaseView::OnGridLabelLeftClick(wxGridEvent& event) {
                 int i = 0;
                 for (auto signal : (*it)->getSignals())
                 {
-                    _signalsGrid->SetCellValue(i, COLUMN_SIGNAL_GRID_ID, wxString::Format("0x%X", signal->getParent().lock()->getId())); // ID
+                    _signalsGrid->SetCellValue(i, COLUMN_SIGNAL_GRID_MSG_ID, wxString::Format("0x%X", signal->getParent().lock()->getId())); // ID
                     _signalsGrid->SetCellValue(i, COLUMN_SIGNAL_GRID_NAME, signal->getName()); // Name
                     _signalsGrid->AutoSizeColumn(COLUMN_SIGNAL_GRID_NAME);  // Resize the specific column (index 1)
                     _signalsGrid->SetCellValue(i, COLUMN_SIGNAL_GRID_STARTBIT, wxString::Format("%d", signal->getStartBit())); // StartBit
@@ -313,7 +338,18 @@ void TabDatabaseView::OnGridLabelLeftClick(wxGridEvent& event) {
 
 void TabDatabaseView::UpdateMessageGrid(std::string busName, uint32_t messageId)
 {
+    auto message = _canViewModel->getBusMan()->getBus(busName)->getMessageById(messageId);
+    for (int row = 0; row < _messagesGrid->GetNumberRows(); row++)
+    {
+        if (std::stoul(_messagesGrid->GetCellValue(row, COLUMN_MESSAGE_GRID_ID).ToStdString(), nullptr, 16) == messageId)
+        {
+            std::shared_ptr<uint8_t[]> data = message->getData();
 
+            std::string dataStr = cantools_cpp::Util::getInstance().convertToHexString(data, message->getLength());
+            _messagesGrid->SetCellValue(row, COLUMN_MESSAGE_GRID_DATA, dataStr); // Data
+            message->setData(data.get(), message->getLength()); // this trick to update signal physical, raw
+        }
+    }
 }
 
 void TabDatabaseView::UpdateSignalGrid(std::string busName, uint32_t messageId, std::string signalName)

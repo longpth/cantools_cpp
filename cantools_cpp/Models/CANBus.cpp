@@ -46,6 +46,7 @@ namespace cantools_cpp
             _allMessages.push_back(message);
             _currentMessage = message;
             _allSignals[_currentMessage->getId()] = std::vector<std::shared_ptr<CANSignal>>();
+            message->addObserver(this);
         }
         else {
             // Optionally, handle the case where the message is a duplicate
@@ -119,6 +120,7 @@ namespace cantools_cpp
     {
         notifyObserverAboutMessage(messageId);
     }
+
     void CANBus::updateSignal(uint32_t messageId, std::string signalName)
     {
         notifyObserverAboutSignal(messageId, signalName);

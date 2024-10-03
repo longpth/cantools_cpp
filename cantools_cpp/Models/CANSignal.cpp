@@ -58,23 +58,45 @@ namespace cantools_cpp
 
     /**
      * @brief Sets the raw value of the signal and calculates the physical value.
+     *        The raw value is capped based on the bit length.
      * @param value The raw signal value.
      */
     void CANSignal::setRawValue(uint64_t value) {
-        _rawValue = value;
+        // Calculate the maximum possible value for the raw value based on the bit length
+        uint64_t maxRawValue = (1ULL << _length) - 1; // 2^_length - 1
+
+        // Cap the raw value to the maximum allowed by the bit length
+        _rawValue = std::min(value, maxRawValue);
+
         // Calculate the physical value based on the factor and offset
         _physicalValue = static_cast<double>(_rawValue) * _factor + _offset;
+
+        // Trigger a re-pack of the parent
         _parent.lock()->pack();
     }
 
     /**
      * @brief Sets the physical value and calculates the corresponding raw value.
+     *        The raw value is capped based on the bit length, which in turn caps the physical value.
      * @param value The physical signal value.
      */
     void CANSignal::setPhysicalValue(double value) {
+        // Set the physical value and calculate the corresponding raw value
         _physicalValue = value;
+
         // Calculate the raw value based on the physical value, factor, and offset
         _rawValue = static_cast<uint64_t>(((_physicalValue - _offset) / _factor));
+
+        // Calculate the maximum possible value for the raw value based on the bit length
+        uint64_t maxRawValue = (1ULL << _length) - 1; // 2^_length - 1
+
+        // Cap the raw value to the maximum allowed by the bit length
+        _rawValue = std::min(_rawValue, maxRawValue);
+
+        // Recalculate the physical value to reflect the capped raw value
+        _physicalValue = static_cast<double>(_rawValue) * _factor + _offset;
+
+        // Trigger a re-pack of the parent
         _parent.lock()->pack();
     }
 
@@ -129,15 +151,15 @@ namespace cantools_cpp
 
         uint64_t rawValue = Util::getInstance().extractBits(tempArray, startBit, _length);
 
-        if (_rawValue != rawValue)
-        {
+        // Calculate the physical value using scaling and offset
+        double physicalValue = rawValue * _factor + _offset;
+
+        //if (_rawValue != rawValue || _physicalValue != physicalValue)
+        //{
             _rawValue = rawValue;
-
-            // Calculate the physical value using scaling and offset
-            _physicalValue = _rawValue * _factor + _offset;
-
+            _physicalValue = physicalValue;
             notifyObserver();
-        }
+        //}
     }
 
     /**
@@ -153,21 +175,25 @@ namespace cantools_cpp
     std::vector<uint8_t> CANSignal::encode() {
         std::vector<uint8_t> ret(_parent.lock()->getLength(), 0);
 
-        // Encode the raw value based on the byte order
-        if (_byteOrder == ByteOrder_LSB) {
-            // Little Endian encoding
-            for (uint8_t i = 0; i < _length; ++i) {
-                // Set the value in the correct byte position
-                ret[_startBit / 8 + i] |= static_cast<uint8_t>((_rawValue >> (8 * i)) & 0xFF);
-            }
+        auto startBit = _startBit;
+
+        if (_byteOrder == ByteOrder_MSB) {
+            // Big Endian encoding, convert it to little endian
+            startBit = Util::getInstance().getStartBitLE(*this, _parent.lock()->getLength());
         }
-        else {
-            // Big Endian encoding
-            auto startBit = Util::getInstance().getStartBitLE(*this, _length);
-            for (uint8_t i = 0; i < _length; ++i) {
-                // Set the value in the correct byte position
-                ret[startBit / 8 + i] |= static_cast<uint8_t>((_rawValue >> (8 * i)) & 0xFF);
-            }
+
+        uint16_t startByte = startBit / 8;
+        uint16_t endByte = (startBit + _length - 1) / 8;
+        uint16_t lengthByte = (endByte - startByte) + 1;
+        uint16_t startBitInByte = startBit % 8;
+
+        for (uint8_t i = 0; i < lengthByte; ++i) {
+            // Set the value in the correct byte position
+            ret[startByte + i] |= static_cast<uint8_t>(((_rawValue << startBitInByte) >> (8 * i)) & 0xFF);
+        }
+
+        if (_byteOrder == ByteOrder_MSB) {
+            // Big Endian encoding, convert it back to big endian
             ret = Util::getInstance().mirrorMsg(ret);
         }
 
