@@ -1,3 +1,10 @@
+/**
+ * @file IViewModelObserver.hpp
+ *
+ * @author Long Pham
+ * @date 10/03/2024
+ */
+
 #pragma once
 
 class IViewModelObserver {

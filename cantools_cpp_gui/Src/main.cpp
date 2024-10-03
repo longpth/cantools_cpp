@@ -1,3 +1,10 @@
+/**
+ * @file main.cpp
+ *
+ * @author Long Pham
+ * @date 10/03/2024
+ */
+
 #include "GUIView.hpp"
 #include "Logger.hpp"
 

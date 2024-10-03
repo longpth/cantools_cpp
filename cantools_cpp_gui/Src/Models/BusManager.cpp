@@ -1,3 +1,11 @@
+/**
+ * @file BusManager.cpp
+ *
+ * @author Long Pham
+ * @date 10/03/2024
+ */
+
+
 #include "BusManager.hpp"
 #include "CANBus.hpp"
 #include "Logger.hpp"

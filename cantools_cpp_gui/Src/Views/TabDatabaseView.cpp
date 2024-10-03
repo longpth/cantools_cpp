@@ -1,3 +1,10 @@
+/**
+ * @file TabDatabaseView.cpp
+ *
+ * @author Long Pham
+ * @date 10/03/2024
+ */
+
 #include "TabDatabaseView.hpp"
 #include <wx/filename.h>
 #include "Logger.hpp"

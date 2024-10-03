@@ -143,6 +143,13 @@ namespace cantools_cpp {
         void setDlc(int dlc);
 
         /**
+         * @brief Sets the data length of the CAN message.
+         *
+         * @param dlc The new length of the CAN message.
+         */
+        void setLength(int length);
+
+        /**
          * @brief Sets the cycle time for the CAN message.
          *
          * @param cycle The new cycle time.
@@ -206,9 +213,11 @@ namespace cantools_cpp {
         std::vector<std::shared_ptr<SignalGroup>> _signalGroups;  ///< Signal groups associated with the CAN message.
         std::string _name;  ///< Name of the CAN message.
         int _dlc;  ///< Data Length Code (DLC) of the CAN message.
+        int _length; ///< Data Length of the CAN message.
         std::string _transmitter;  ///< Transmitter of the CAN message.
         std::vector<std::string> _additionalTransmitters;  ///< Additional transmitters for the CAN message.
         static const uint8_t _dlc2datalength[];  ///< Array to map DLC to data length.
+        static const std::map<uint8_t, uint8_t> _datalength2dlc;  ///< Map data length to DLC.
         std::shared_ptr<uint8_t[]> _data;  ///< Pointer to the message data.
         float _cycle;  ///< Cycle time for the CAN message.
 

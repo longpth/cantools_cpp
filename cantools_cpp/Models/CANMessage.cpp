@@ -22,6 +22,26 @@ namespace cantools_cpp {
         12, 16, 20, 24, 32, 48, 64
     };
 
+    const std::map<uint8_t, uint8_t> CANMessage::_datalength2dlc =
+    {
+        { 0, 0 },
+        { 1, 1 },
+        { 2, 2 },
+        { 3, 3 },
+        { 4, 4 },
+        { 5, 5 },
+        { 6, 6 },
+        { 7, 7 },
+        { 8, 8 },
+        { 12, 9 },
+        { 16, 10 },
+        { 20, 11 },
+        { 24, 12 },
+        { 32, 13 },
+        { 48, 14 },
+        { 64, 15 },
+    };
+
     /**
      * @brief Constructor for the CANMessage class, initializes the message ID and cycle.
      *
@@ -100,7 +120,7 @@ namespace cantools_cpp {
      * @return The length of the message data.
      */
     int CANMessage::getLength() const {
-        return _dlc2datalength[_dlc];
+        return _length;
     }
 
     /**
@@ -138,6 +158,18 @@ namespace cantools_cpp {
     void CANMessage::setDlc(int dlc) {
         _dlc = dlc;
         _data = std::shared_ptr<uint8_t[]>(new uint8_t[_dlc2datalength[dlc]]());
+    }
+
+    /**
+     * @brief Sets the Data Length of the CAN message and allocates memory for the data.
+     *
+     * @param dlc The new data length of the CAN message.
+     */
+    void CANMessage::setLength(int length)
+    {
+        _dlc = _datalength2dlc.at(length);
+        _length = length;
+        _data = std::shared_ptr<uint8_t[]>(new uint8_t[length]());
     }
 
     /**

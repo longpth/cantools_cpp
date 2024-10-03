@@ -21,7 +21,7 @@ namespace cantools_cpp
         if (std::regex_search(_trimmed, _match, MessageRegex) && _match.size() > 4) {
             std::shared_ptr<CANMessage> msg = std::make_shared<CANMessage>(static_cast<unsigned int>(std::stoul(_match.str(1))));
             msg->setName(_match.str(2));  // Use setter for the name
-            msg->setDlc(static_cast<unsigned short>(std::stoi(_match.str(3)))); // Use setter for DLC, parsing the size
+            msg->setLength(static_cast<unsigned short>(std::stoi(_match.str(3)))); // Use setter for DLC, parsing the size
             msg->setTransmitter(_match.str(4)); // Use setter for the transmitter
 
             auto canNode = busMan->getBus(busName)->getNodeByName(msg->getTransmitter());

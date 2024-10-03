@@ -1,3 +1,10 @@
+/**
+ * @file GUIView.cpp
+ *
+ * @author Long Pham
+ * @date 10/03/2024
+ */
+
 #include "GUIView.hpp"
 #include "TabDatabaseView.hpp"
 

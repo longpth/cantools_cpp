@@ -1,3 +1,10 @@
+/**
+ * @file GUIView.hpp
+ *
+ * @author Long Pham
+ * @date 10/03/2024
+ */
+
 #pragma once
 
 #include <wx/wx.h>

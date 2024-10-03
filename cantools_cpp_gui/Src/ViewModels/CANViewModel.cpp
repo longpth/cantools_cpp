@@ -1,3 +1,10 @@
+/**
+ * @file CANViewModel.hpp
+ *
+ * @author Long Pham
+ * @date 10/03/2024
+ */
+
 #include <wx/filename.h>
 #include <filesystem>
 #include "CANViewModel.hpp"
