@@ -157,6 +157,8 @@ void TabDatabaseView::OnLoadDBC(wxCommandEvent& event)
 
 void TabDatabaseView::Update(std::vector<std::shared_ptr<cantools_cpp::CANNode>> nodes, std::vector<std::shared_ptr<cantools_cpp::CANMessage>> messages, std::string busName)
 {
+    // Clear the previous data in the grid
+    _signalsGrid->ClearGrid(); // Clear existing data
     PopulateData(nodes, messages, busName);
 }
 
